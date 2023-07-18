@@ -38,6 +38,7 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.R
+import com.example.onehourapp.utils.SharedReferencesUtil
 import kotlinx.coroutines.delay
 
 @Composable
@@ -128,6 +129,7 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
         Button(
             onClick = {
                 animateToEnd = !animateToEnd
+                SharedReferencesUtil.setSharedData(context,"auth_status","true")
                 onStartBtnClick()
             },
             shape = RoundedCornerShape(15.dp),

@@ -80,7 +80,7 @@ fun NavGraphBuilder.detailsNavGraph(navController: NavHostController) {
             ScreenContent(name = DetailsScreen.Overview.route) {
                 navController.popBackStack(
                     route = DetailsScreen.Information.route,
-                    inclusive = true
+                    inclusive = false
                 )
             }
         }
