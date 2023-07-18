@@ -1,0 +1,93 @@
+package com.example.onehourapp.graphs
+
+import android.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import com.example.onehourapp.screens.BottomBarScreen
+import com.example.onehourapp.ui.theme.BackgroundColor
+
+@Composable
+fun HomeNavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        route = Graph.HOME,
+        startDestination = BottomBarScreen.Activity.route
+    ) {
+        composable(route = BottomBarScreen.Calendar.route) {
+            ScreenContent(
+                name = BottomBarScreen.Calendar.title,
+                onClick = {
+                    navController.navigate(Graph.DETAILS)
+                }
+            )
+        }
+        composable(route = BottomBarScreen.Activity.route) {
+            ScreenContent(
+                name = BottomBarScreen.Activity.title,
+                onClick = { }
+            )
+        }
+        composable(route = BottomBarScreen.Settings.route) {
+            ScreenContent(
+                name = BottomBarScreen.Settings.title,
+                onClick = { }
+            )
+        }
+        detailsNavGraph(navController = navController)
+    }
+}
+
+@Composable
+fun ScreenContent(name: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize().background(BackgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            modifier = Modifier.clickable { onClick() },
+            text = name,
+            color = White,
+            fontSize = MaterialTheme.typography.h3.fontSize,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+fun NavGraphBuilder.detailsNavGraph(navController: NavHostController) {
+    navigation(
+        route = Graph.DETAILS,
+        startDestination = DetailsScreen.Information.route
+    ) {
+        composable(route = DetailsScreen.Information.route) {
+            ScreenContent(name = DetailsScreen.Information.route) {
+                navController.navigate(DetailsScreen.Overview.route)
+            }
+        }
+        composable(route = DetailsScreen.Overview.route) {
+            ScreenContent(name = DetailsScreen.Overview.route) {
+                navController.popBackStack(
+                    route = DetailsScreen.Information.route,
+                    inclusive = true
+                )
+            }
+        }
+    }
+}
+
+sealed class DetailsScreen(val route: String) {
+    object Information : DetailsScreen(route = "INFORMATION")
+    object Overview : DetailsScreen(route = "OVERVIEW")
+}

@@ -1,0 +1,98 @@
+{
+  ConstraintSets: {
+    start: {
+      parent_box: {
+        width: 'parent',
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom']
+      },
+      image_holder: {
+        width: 'parent',
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom']
+      },
+      image_gradient_holder: {
+        width: 'spread',
+        height: 'spread',
+        start: ['image_holder', 'start'],
+        end: ['image_holder', 'end'],
+        top: ['image_holder', 'top'],
+        bottom: ['image_holder', 'bottom'],
+        alpha: 0.0
+      },
+      middle_txt: {
+        width: 'wrap',
+        height: 'wrap',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['image_holder', 'bottom'],
+        alpha: 0.0
+      },
+      start_btn: {
+        width: 'wrap',
+        height: 'wrap',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['image_holder', 'bottom'],
+        bottom: ['parent', 'bottom',46],
+        alpha: 0.0
+      }
+    },
+    end: {
+      parent_box: {
+        width: 'parent',
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom']
+      },
+      image_holder: {
+        width: 'parent',
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top', -220]
+      },
+      image_gradient_holder: {
+        width: 'spread',
+        height: 'spread',
+        start: ['image_holder', 'start'],
+        end: ['image_holder', 'end'],
+        top: ['image_holder', 'top'],
+        bottom: ['image_holder', 'bottom'],
+        alpha: 1.0
+      },
+      middle_txt: {
+        width: 'wrap',
+        height: 'wrap',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['image_holder', 'bottom',-50],
+        alpha: 0.8
+      },
+      start_btn: {
+        width: 'wrap',
+        height: 'wrap',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['image_holder', 'bottom', -20],
+        bottom: ['parent', 'bottom'],
+        alpha: 1.0
+      }
+    }
+  },
+  Transitions: {
+    default: {
+      from: 'start',
+      to: 'end',
+      pathArc: 'none'
+    }
+  }
+}
