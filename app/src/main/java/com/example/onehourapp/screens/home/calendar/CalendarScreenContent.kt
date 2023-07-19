@@ -3,25 +3,31 @@ package com.example.onehourapp.screens.home.calendar
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -84,6 +90,8 @@ fun HorizontalPagerContent(navController: NavHostController) {
         motionScene = MotionScene(content = motionScene),
         motionLayoutState = motionState
     ) {
+        val painter: Painter = painterResource(R.drawable.round_scale_out)
+
         Box(modifier = Modifier
             .background(BackgroundColor)
             .layoutId("calendar_panel")
@@ -147,7 +155,7 @@ fun HorizontalPagerContent(navController: NavHostController) {
                                         color = Color.LightGray,
                                         topLeft = Offset(x + spacing.toPx(), y - offset + spacing.toPx() ),
                                         size = Size(cellSize, cellSize),
-                                        cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                                        cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx())
                                     )
                                 }
                                 else {
@@ -174,7 +182,23 @@ fun HorizontalPagerContent(navController: NavHostController) {
                 }
             }
         }
+        IconButton(
+            onClick = {
 
+            },
+            modifier = Modifier.size(50.dp)
+                .layoutId("scale_out_btn")
+                .clip(CircleShape)
+                .alpha(0.5f)
+                .background(Color.DarkGray)
+                .border(2.dp, Color.White, CircleShape),
+            content = {
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                )
+            }
+        )
         Box(modifier = Modifier
             .background(Color.Transparent)
             .padding(horizontal = 5.dp)
