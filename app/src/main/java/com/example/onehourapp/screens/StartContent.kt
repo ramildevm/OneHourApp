@@ -109,8 +109,10 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
             .layoutId("image_gradient_holder")
         ) {
             val gradientColors = listOf(
-                Color.Transparent, Color.Transparent,
-                Color.Transparent, Color.Transparent,
+                Color.Transparent,
+                Color.Transparent,
+                Color.Transparent,
+                Color.Transparent,
                 Color.Transparent,
                 Color.Transparent,
                 Color.Black,

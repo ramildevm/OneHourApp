@@ -1,0 +1,83 @@
+{
+  ConstraintSets: {
+    start: {
+      calendar_panel: {
+        width: 'parent',
+        height: 350,
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        scaleY: 1,
+        scaleX: 1,
+        alpha: 1,
+        translationY: 0,
+      },
+      content_panel: {
+        width: 'parent',
+        height: 'spread',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['calendar_panel', 'bottom'],
+        bottom: ['parent', 'bottom']
+      }
+    },
+    end: {
+      calendar_panel: {
+        width: 'parent',
+        height: 350,
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        translationY: -100,
+        alpha: 0,
+      },
+      content_panel: {
+        width: 'parent',
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top',5],
+        bottom: ['parent', 'bottom']
+      }
+    },
+    end2: {
+      calendar_panel: {
+        width: 'parent',
+        height: 350,
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
+      },
+      content_panel: {
+        width: 0,
+        height: 'parent',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        bottom: ['parent', 'bottom']
+      }
+    }
+  },
+  Transitions: {
+    default: {
+      from: 'start',
+      to: 'end',
+      pathMotionArc: 'startVertical',
+      onSwipe: {
+        anchor: 'content_panel',
+        direction: 'up',
+        side: 'top'
+      }
+    },
+    default2: {
+      from: 'start',
+      to: 'end2',
+      pathMotionArc: 'startVertical',
+      onSwipe: {
+        anchor: 'calendar_panel',
+        direction: 'down',
+        side: 'top'
+      }
+    }
+  }
+}

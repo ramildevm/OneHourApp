@@ -35,3 +35,17 @@ fontWeight = FontWeight.Normal,
     color = Color.White,
     textAlign = TextAlign.Center
 )
+val CalendarDayFont= TextStyle(
+fontFamily = FontFamily.Monospace,
+fontWeight = FontWeight.Normal,
+    fontSize = 8.sp,
+    color = Color.White,
+    textAlign = TextAlign.Center
+)
+val CalendarCurrentDayFont= TextStyle(
+fontFamily = FontFamily.Monospace,
+fontWeight = FontWeight.Normal,
+    fontSize = 8.sp,
+    color = MainColorSecondRed,
+    textAlign = TextAlign.Center
+)
