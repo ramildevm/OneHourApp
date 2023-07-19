@@ -1,6 +1,5 @@
 package com.example.onehourapp.graphs
 
-import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.onehourapp.screens.BottomBarScreen
+import com.example.onehourapp.screens.home.calendar.CalendarScreenContent
 import com.example.onehourapp.ui.theme.BackgroundColor
 
 @Composable
@@ -28,12 +28,13 @@ fun HomeNavGraph(navController: NavHostController) {
         startDestination = BottomBarScreen.Activity.route
     ) {
         composable(route = BottomBarScreen.Calendar.route) {
-            ScreenContent(
-                name = BottomBarScreen.Calendar.title,
-                onClick = {
-                    navController.navigate(Graph.DETAILS)
-                }
-            )
+//            ScreenContent(
+//                name = BottomBarScreen.Calendar.title,
+//                onClick = {
+//                    navController.navigate(Graph.DETAILS)
+//                }
+//            )
+            CalendarScreenContent(navController)
         }
         composable(route = BottomBarScreen.Activity.route) {
             ScreenContent(
