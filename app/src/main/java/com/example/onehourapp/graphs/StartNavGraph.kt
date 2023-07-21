@@ -1,12 +1,10 @@
 package com.example.onehourapp.graphs
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.onehourapp.screens.StartContent
-import com.example.onehourapp.utils.SharedReferencesUtil
 
 fun NavGraphBuilder.startNavGraph(navController: NavHostController) {
     navigation(

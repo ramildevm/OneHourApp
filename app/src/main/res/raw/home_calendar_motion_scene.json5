@@ -1,18 +1,21 @@
 {
   ConstraintSets: {
     start: {
-      scale_out_btn: {
-        width: 50,
-        height: 50,
-        start: ['parent', 'start',8],
-        bottom: ['calendar_panel', 'bottom',8],
-      },
       calendar_panel: {
         width: 'parent',
         height: 350,
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        top: ['parent', 'top'],
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
         scaleY: 1,
         scaleX: 1,
         alpha: 1,
@@ -21,55 +24,65 @@
       content_panel: {
         width: 'parent',
         height: 'spread',
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        top: ['calendar_panel', 'bottom'],
-        bottom: ['parent', 'bottom']
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'calendar_panel',
+          'bottom'
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ]
       }
     },
     end: {
-      scale_out_btn: {
-        visibility: 'gone',
-        width: 50,
-        height: 50,
-        start: ['parent', 'start'],
-        bottom: ['parent', 'top'],
-      },
       calendar_panel: {
         width: 'parent',
         height: 350,
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        top: ['parent', 'top'],
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top'
+        ],
         translationY: -100,
         alpha: 0,
       },
       content_panel: {
         width: 'parent',
         height: 'parent',
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        top: ['parent', 'top',5],
-        bottom: ['parent', 'bottom']
+        start: [
+          'parent',
+          'start'
+        ],
+        end: [
+          'parent',
+          'end'
+        ],
+        top: [
+          'parent',
+          'top',
+          5
+        ],
+        bottom: [
+          'parent',
+          'bottom'
+        ]
       }
     },
-    end2: {
-      calendar_panel: {
-        width: 'parent',
-        height: 350,
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        top: ['parent', 'top'],
-        bottom: ['parent', 'bottom'],
-      },
-      content_panel: {
-        width: 0,
-        height: 'parent',
-        start: ['parent', 'start'],
-        end: ['parent', 'end'],
-        bottom: ['parent', 'bottom']
-      }
-    }
   },
   Transitions: {
     default: {
@@ -79,16 +92,6 @@
       onSwipe: {
         anchor: 'content_panel',
         direction: 'up',
-        side: 'top'
-      }
-    },
-    default2: {
-      from: 'start',
-      to: 'end2',
-      pathMotionArc: 'startVertical',
-      onSwipe: {
-        anchor: 'calendar_panel',
-        direction: 'down',
         side: 'top'
       }
     }

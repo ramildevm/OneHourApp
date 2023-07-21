@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.onehourapp.screens.BottomBarScreen
+import com.example.onehourapp.screens.home.YearStatScreenContent
 import com.example.onehourapp.screens.home.activity.ActivityScreenContent
 import com.example.onehourapp.screens.home.calendar.CalendarScreenContent
 import com.example.onehourapp.ui.theme.BackgroundColor
@@ -28,6 +29,9 @@ fun HomeNavGraph(navController: NavHostController) {
         route = Graph.HOME,
         startDestination = BottomBarScreen.Activity.route
     ) {
+        composable(route = BottomBarScreen.YearStat.route) {
+            YearStatScreenContent(navController)
+        }
         composable(route = BottomBarScreen.Calendar.route) {
             CalendarScreenContent(navController)
         }

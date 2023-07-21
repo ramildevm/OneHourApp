@@ -90,7 +90,7 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
                         size(Size.ORIGINAL)
                     }).build(), imageLoader = imageLoader
             )
-            else painterResource(R.drawable.start_activity_main_back2),
+            else painterResource(R.drawable.start_activity_main_bg),
             contentDescription = null,
             alignment = Alignment.Center,
             modifier = Modifier

@@ -3,31 +3,30 @@ package com.example.onehourapp.screens.home.calendar
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -39,6 +38,8 @@ import androidx.constraintlayout.compose.MotionScene
 import androidx.constraintlayout.compose.rememberMotionLayoutState
 import androidx.navigation.NavHostController
 import com.example.onehourapp.R
+import com.example.onehourapp.helpers.UITextHelper.generateLoremIpsumWords
+import com.example.onehourapp.helpers.pagerFanTransition
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.BackgroundSecondColor
 import com.example.onehourapp.ui.theme.CalendarCurrentDayFont
@@ -48,7 +49,6 @@ import com.example.onehourapp.utils.CalendarUtil.getCurrentDay
 import com.example.onehourapp.utils.CalendarUtil.getCurrentMonth
 import com.example.onehourapp.utils.CalendarUtil.getCurrentYear
 import com.example.onehourapp.utils.CalendarUtil.getDaysInMonth
-import kotlin.math.absoluteValue
 
 
 @Composable
@@ -61,19 +61,7 @@ fun CalendarScreenContent(navController: NavHostController) {
 fun HorizontalPagerContent(navController: NavHostController) {
     val context = LocalContext.current
     val months = listOf("January", "February", "March", "April", "May", "June","July","August","September","October","November","December")
-    val color = listOf(Color.Red,
-        Color(0xFFFF8800),
-        Color.Yellow,
-        Color.Green,
-        Color(0xFF0088FF),
-        Color.Blue,
-        Color(0xFF8000FF),
-        Color.Black,
-        Color.DarkGray,
-        Color.Gray,
-        Color.LightGray,
-        Color(0xFFFF8D8D)
-    )
+
     val startIndex = Int.MAX_VALUE / 2 - 3 + getCurrentMonth()
 
     val pagerState = rememberPagerState(initialPage = startIndex)
@@ -90,8 +78,6 @@ fun HorizontalPagerContent(navController: NavHostController) {
         motionScene = MotionScene(content = motionScene),
         motionLayoutState = motionState
     ) {
-        val painter: Painter = painterResource(R.drawable.round_scale_out)
-
         Box(modifier = Modifier
             .background(BackgroundColor)
             .layoutId("calendar_panel")
@@ -182,23 +168,6 @@ fun HorizontalPagerContent(navController: NavHostController) {
                 }
             }
         }
-        IconButton(
-            onClick = {
-
-            },
-            modifier = Modifier.size(50.dp)
-                .layoutId("scale_out_btn")
-                .clip(CircleShape)
-                .alpha(0.5f)
-                .background(Color.DarkGray)
-                .border(2.dp, Color.White, CircleShape),
-            content = {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                )
-            }
-        )
         Box(modifier = Modifier
             .background(Color.Transparent)
             .padding(horizontal = 5.dp)
@@ -217,34 +186,6 @@ fun HorizontalPagerContent(navController: NavHostController) {
         }
     }
 }
-@OptIn(ExperimentalFoundationApi::class)
-fun Modifier.pagerFanTransition(page: Int, pagerState: PagerState) = graphicsLayer {
-    cameraDistance = 200f
-    val pageOffset = pagerState.calculateCurrentOffsetForPage(page)
-    translationY = pageOffset.absoluteValue * size.height / 8
 
-    if (pageOffset < -1f) {
-        alpha = 0f
-    } else if (pageOffset < 0) {
-        alpha = 1f
-        rotationZ = 20f * pageOffset.absoluteValue
-    } else if (pageOffset <= 1 && pageOffset>0) {
-        alpha = 1f
-        rotationZ = -20f * pageOffset.absoluteValue
-    } else {
-        alpha = 1f
-    }
-}
-fun generateLoremIpsumWords(count: Int): String {
-    val words = listOf(
-        "Lorem", "ipsum", "dolor", "sit", "amet", "consectetur",
-        "adipiscing", "elit", "sed", "do", "eiusmod", "tempor",
-        "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua"
-    )
 
-    return List(count) { words.random() }.joinToString(" ")
-}
-@OptIn(ExperimentalFoundationApi::class)
-fun PagerState.calculateCurrentOffsetForPage(page: Int): Float {
-    return (currentPage - page) + currentPageOffsetFraction
-}
+
