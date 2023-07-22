@@ -1,9 +1,17 @@
 package com.example.onehourapp.screens.home
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +27,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.example.onehourapp.screens.home.activity.RoundedBoxesList
 import com.example.onehourapp.ui.theme.BackgroundColor
@@ -28,32 +38,58 @@ import kotlin.math.sin
 
 @Composable
 fun YearStatScreenContent(navController: NavHostController) {
-    val density = LocalDensity.current.density
-    ZoomableCanvas(density = density)
+    MainContent()
 }
+
+@Composable
+fun MainContent() {
+    Column {
+        val density = LocalDensity.current.density
+        Box(modifier = Modifier.background(Color.Gray).fillMaxWidth().height(30.dp).zIndex(1f)){
+            Text("DEDEDEDDDDDDDDE")
+        }
+        Box(modifier = Modifier.weight(1f).zIndex(0f)) {
+            ZoomableCanvas(density = density)
+        }
+    }
+}
+
 @Composable
 fun ZoomableCanvas(density:Float) {
-    var scale by remember { mutableStateOf(1f) }
+    val startScale = 0.47f
+    var scale by remember { mutableStateOf(startScale) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
+    var canvasRotation by remember { mutableStateOf(0f) }
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(Color.Black)
             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale *= zoom
-                    offsetX += pan.x
-                    offsetY += pan.y
+                detectTransformGestures { _, pan, zoom, rotation ->
+                    val newScale = (scale * zoom).coerceIn(startScale, 1.5f)
+                    val newOffsetX = (offsetX + pan.x).coerceIn(
+                        -(newScale - startScale) * size.width,
+                        (newScale - startScale) * size.width
+                    )
+                    val newOffsetY = (offsetY + pan.y).coerceIn(
+                        -(newScale - startScale) * size.height,
+                        (newScale - startScale) * size.height
+                    )
+                    val normalizedRotation = if (rotation >= 0) rotation else rotation + 360
+                    offsetX = newOffsetX
+                    offsetY = newOffsetY
+                    canvasRotation += normalizedRotation
+                    scale = newScale
                 }
             }
             .wrapContentSize()
     ) {
-        drawCanvasContent(this,density, scale, offsetX, offsetY)
+        drawCanvasContent(this,density, scale, offsetX, offsetY, canvasRotation)
     }
 }
-private fun drawCanvasContent(drawScope: DrawScope, density:Float, scale: Float, offsetX: Float, offsetY: Float) {
+private fun drawCanvasContent(drawScope: DrawScope, density:Float, scale: Float, offsetX: Float, offsetY: Float, rotation: Float) {
     val canvasWidth = drawScope.size.width
     val canvasHeight = drawScope.size.height
     val dotRadius = 2f
@@ -62,27 +98,31 @@ private fun drawCanvasContent(drawScope: DrawScope, density:Float, scale: Float,
     val centerX = canvasWidth / 2
     val centerY = canvasHeight / 2
     val circleRadius = 500
+    val totalDegrees = (totalColumns * (360f / totalColumns) * (PI / 180)).toFloat()
+    val startRotation = totalDegrees / 4
+    val canvasRotation = totalDegrees / (360f/rotation)
 
     drawScope.drawIntoCanvas { canvas ->
         canvas.save()
         canvas.translate(offsetX, offsetY)
         canvas.scale(scale, scale)
-        val paint = Paint().apply {
-            color = Color.Green
-        }
-        canvas.drawRect(Rect(Offset(0f,0f),size = Size(canvasWidth,canvasHeight)), paint)
         for (row in 0 until 24) {
             var index = 0
             val rowRadius = circleRadius + (row * (dotRadius + dotSpacing)) * density
             for (i in 0 until totalColumns) {
-                val angle = (i * (360f / totalColumns) * (PI / 180)).toFloat()
+                val angle = (i * (360f / totalColumns) * (PI / 180)).toFloat() - startRotation +canvasRotation
+
                 val x = centerX + rowRadius * cos(angle)
                 val y = centerY + rowRadius * sin(angle)
-                var colore = Color.Red
-                if(index%31==0)
-                    colore = BackgroundColor
+                var paintColor = Color.Red
+                if(i==0)
+                    paintColor = Color.Yellow
+                else if(index%31==0){
+                    index++
+                    continue
+                }
                 val circlePaint = Paint().apply {
-                    color = colore
+                    color = paintColor
                 }
                 canvas.drawCircle(paint = circlePaint, center = Offset(x, y), radius = dotRadius)
                 index++

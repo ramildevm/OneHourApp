@@ -17,6 +17,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.onehourapp.screens.BottomBarScreen
+import com.example.onehourapp.screens.home.ComposeAlertDialogExample
+import com.example.onehourapp.screens.home.SettingsContent
 import com.example.onehourapp.screens.home.YearStatScreenContent
 import com.example.onehourapp.screens.home.activity.ActivityScreenContent
 import com.example.onehourapp.screens.home.calendar.CalendarScreenContent
@@ -29,6 +31,7 @@ fun HomeNavGraph(navController: NavHostController) {
         route = Graph.HOME,
         startDestination = BottomBarScreen.Activity.route
     ) {
+
         composable(route = BottomBarScreen.YearStat.route) {
             YearStatScreenContent(navController)
         }
@@ -36,13 +39,10 @@ fun HomeNavGraph(navController: NavHostController) {
             CalendarScreenContent(navController)
         }
         composable(route = BottomBarScreen.Activity.route) {
-            ActivityScreenContent(navController = navController)
+            ActivityScreenContent(navController)
         }
         composable(route = BottomBarScreen.Settings.route) {
-            ScreenContent(
-                name = BottomBarScreen.Settings.title,
-                onClick = { }
-            )
+            SettingsContent()
         }
         detailsNavGraph(navController = navController)
     }
@@ -71,9 +71,7 @@ fun NavGraphBuilder.detailsNavGraph(navController: NavHostController) {
         startDestination = DetailsScreen.Information.route
     ) {
         composable(route = DetailsScreen.Information.route) {
-            ScreenContent(name = DetailsScreen.Information.route) {
-                navController.navigate(DetailsScreen.Overview.route)
-            }
+
         }
         composable(route = DetailsScreen.Overview.route) {
             ScreenContent(name = DetailsScreen.Overview.route) {

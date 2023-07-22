@@ -27,5 +27,9 @@ object CalendarUtil {
         val currentDate = Calendar.getInstance()
         return currentDate.get(Calendar.DAY_OF_MONTH)
     }
+    fun getCurrentHour(): Int {
+        val currentDate = Calendar.getInstance()
+        return currentDate.get(Calendar.HOUR_OF_DAY)
+    }
 
 }

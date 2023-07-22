@@ -1,5 +1,7 @@
 package com.example.onehourapp
 
+import android.app.Service
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -40,6 +43,7 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.size.Size
 import com.example.onehourapp.graphs.RootNavigationGraph
+import com.example.onehourapp.services.NotificationService
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.ui.theme.OneHourAppTheme
 import kotlinx.coroutines.delay
@@ -47,6 +51,10 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Intent(this, NotificationService::class.java).also {
+            it.action = NotificationService.State.START.toString()
+            startService(it)
+        }
         setContent {
             OneHourAppTheme {
                 RootNavigationGraph(navController = rememberNavController())

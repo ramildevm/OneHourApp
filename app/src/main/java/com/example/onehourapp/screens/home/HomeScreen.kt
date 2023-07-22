@@ -5,13 +5,15 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,18 +30,28 @@ import com.example.onehourapp.screens.BottomBarScreen
 import com.example.onehourapp.ui.theme.BottomBarAddColor
 import com.example.onehourapp.ui.theme.BottomBarColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.utils.CalendarUtil
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavHostController = rememberNavController()) {
+    var isAddBtnClicked by remember { mutableStateOf(false) }
     Scaffold(
-        bottomBar = { BottomBar(navController = navController) }
+        bottomBar = { BottomBar(navController = navController) { isAddBtnClicked = true } }
     ) {
+        if(isAddBtnClicked)
+            ComposeAlertDialogExample (
+                day = CalendarUtil.getCurrentDay(),
+                hour = CalendarUtil.getCurrentHour(),
+                onDismiss = {isAddBtnClicked = false}
+            )
         HomeNavGraph(navController = navController)
+
     }
 }
 
 @Composable
-fun BottomBar(navController: NavHostController) {
+fun BottomBar(navController: NavHostController, onClick: () -> Unit, ) {
     val screens = listOf(
         BottomBarScreen.YearStat,
         BottomBarScreen.Calendar,
@@ -60,7 +72,8 @@ fun BottomBar(navController: NavHostController) {
                 AddItem(
                     screen = screen,
                     currentDestination = currentDestination,
-                    navController = navController
+                    navController = navController,
+                    onAddBtnClick = onClick
                 )
             }
         }
@@ -72,7 +85,9 @@ fun BottomBar(navController: NavHostController) {
 fun RowScope.AddItem(
     screen: BottomBarScreen,
     currentDestination: NavDestination?,
-    navController: NavHostController)
+    navController: NavHostController,
+    onAddBtnClick: () -> Unit
+)
  {
      val isAddScreen = screen is AddButtonScreen
     BottomNavigationItem(
@@ -84,12 +99,12 @@ fun RowScope.AddItem(
         },
         icon = {
             val modifier = Modifier.size(30.dp)
-            val addScreenModifier = Modifier.fillMaxSize().align(Alignment.Bottom).offset(0.dp,5.dp)
+            val addScreenModifier = Modifier.fillMaxSize().align(Alignment.CenterVertically)
             if(isAddScreen)
             Icon (modifier = addScreenModifier ,
                 imageVector = Icons.Rounded.Circle,
                 contentDescription =null,
-                tint = MainColorSecondRed )
+                tint = Color.White )
             Icon(
                 modifier = if(isAddScreen) addScreenModifier else modifier,
                 painter = screen.icon.asPainterResource(),
@@ -97,7 +112,7 @@ fun RowScope.AddItem(
             )
 
         },
-        alwaysShowLabel = true,
+        alwaysShowLabel = !isAddScreen,
         selected = currentDestination?.hierarchy?.any {
             it.route == screen.route
         } == true,
@@ -105,7 +120,7 @@ fun RowScope.AddItem(
         unselectedContentColor = if(isAddScreen) BottomBarAddColor else Color.White,
         onClick = {
             if(isAddScreen)
-
+                onAddBtnClick()
             else
             navController.navigate(screen.route) {
                 navController.graph.startDestinationRoute?.let { screen_route ->
@@ -115,7 +130,7 @@ fun RowScope.AddItem(
                 }
                 launchSingleTop = true
                 restoreState = true
-            } //TODO: double click
+            }
         }
     )
 }

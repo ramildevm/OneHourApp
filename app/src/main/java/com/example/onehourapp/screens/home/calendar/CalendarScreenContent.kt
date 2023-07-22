@@ -64,7 +64,12 @@ fun HorizontalPagerContent(navController: NavHostController) {
 
     val startIndex = Int.MAX_VALUE / 2 - 3 + getCurrentMonth()
 
-    val pagerState = rememberPagerState(initialPage = startIndex)
+    val pagerState = rememberPagerState(
+        initialPage = startIndex,
+        initialPageOffsetFraction = 0f
+    ) {
+        return@rememberPagerState Int.MAX_VALUE
+    }
     val motionScene = remember {
         context.resources
             .openRawResource(R.raw.home_calendar_motion_scene)
@@ -84,7 +89,6 @@ fun HorizontalPagerContent(navController: NavHostController) {
         ){
             val textMeasurer = rememberTextMeasurer()
             HorizontalPager(
-                pageCount = Int.MAX_VALUE,
                 state = pagerState,
                 beyondBoundsPageCount = 2,
                 modifier = Modifier
@@ -127,14 +131,12 @@ fun HorizontalPagerContent(navController: NavHostController) {
                                 var x = column * (cellSize + 5)
                                 var y = row * (cellSize + 5)
                                 val center = (columns-1) / 2
-                                Log.e("Tag", "$center")
                                 var offset = 0
                                 when(column){
                                     in 0..center-2 -> offset = column
                                     in center-2..center+2 -> offset = center -2
                                     in center+2..columns -> offset = columns - column
                                 }
-                                Log.e("Tag", "$offset")
                                 if(row!=0) {
                                     y += 5
                                     drawRoundRect(
