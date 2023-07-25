@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.onehourapp">
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -23,15 +24,22 @@
             </intent-filter>
         </activity>
         <activity
-        android:name=".screens.AddRecordDialogActivity"
-        android:configChanges="keyboardHidden|orientation|screenSize"
-        android:launchMode="singleTask"
-        android:screenOrientation="user"
-            android:label=""
-        android:excludeFromRecents="true"
-        android:theme="@style/Theme.AppCompat.Light.Dialog.Alert" >
-    </activity>
-        <service android:name=".services.NotificationService"/>
+            android:name=".screens.AddRecordDialogActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="standard"
+            android:exported="true"
+            android:screenOrientation="user"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.ActivityDialog" >
+        </activity>
+        <receiver android:name=".receivers.NotificationReceiver"/>
+        <receiver android:name=".receivers.NotificationBootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

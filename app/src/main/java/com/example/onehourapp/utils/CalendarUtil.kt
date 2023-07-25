@@ -7,7 +7,6 @@ import java.util.Locale
 object CalendarUtil {
     fun getDaysInMonth(month: Int, year: Int): Int {
         val calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMMM", Locale.getDefault())
 
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)

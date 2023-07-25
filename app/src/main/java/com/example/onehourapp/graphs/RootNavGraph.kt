@@ -6,13 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.onehourapp.screens.home.HomeScreen
-import com.example.onehourapp.utils.SharedReferencesUtil
+import com.example.onehourapp.utils.SharedPreferencesUtil
 
 
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
     val context = LocalContext.current
-    val authStatus = SharedReferencesUtil.getSharedStringData(context,"auth_status")
+    val authStatus = SharedPreferencesUtil.getSharedStringData(context,"auth_status")
 
     NavHost(
         navController = navController,

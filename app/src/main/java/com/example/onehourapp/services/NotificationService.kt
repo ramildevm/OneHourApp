@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.onehourapp.R
+import com.example.onehourapp.receivers.NotificationReceiver
 import com.example.onehourapp.screens.AddRecordDialogActivity
 import com.example.onehourapp.utils.CalendarUtil
 import java.util.Calendar
@@ -21,13 +22,10 @@ import java.util.TimerTask
 class NotificationService : Service() {
     private val notificationChannelId = "my_notification_channel"
     private var notificationManager: NotificationManager? = null
-    var isServiceRunning = false
-
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        isServiceRunning = true
 
     }
     private fun createNotificationChannel() {
@@ -42,10 +40,7 @@ class NotificationService : Service() {
         }
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when(intent?.action){
-            State.START.toString() -> start()
-            State.STOP.toString() -> stopSelf()
-        }
+        start()
         return START_STICKY
     }
 
@@ -54,6 +49,7 @@ class NotificationService : Service() {
         startForeground(time.toInt(),showNotification())
         startNotificationTimer()
     }
+
 
     private fun startNotificationTimer() {
         val timer = Timer()
@@ -74,11 +70,11 @@ class NotificationService : Service() {
                 val time = Calendar.getInstance().timeInMillis
                 notificationManager?.notify(time.toInt(), showNotification())
             }
-        }, 60*60*1000,  60*60 * 1000)
+        }, 15*1000,  60 * 1000)
     }
     private fun scheduleNextNotification() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val nextNotificationTime = System.currentTimeMillis() + (15 * 1000) // 1 hour
+        val nextNotificationTime = System.currentTimeMillis() + (60 * 1000) // 1 hour
         val pendingIntent = PendingIntent.getService(
             this, 0, Intent(this, NotificationService::class.java), PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -86,8 +82,9 @@ class NotificationService : Service() {
     }
 
     private fun showNotification() : Notification{
-        val notificationIntent = Intent(this, AddRecordDialogActivity::class.java).putExtra("day",CalendarUtil.getCurrentDay()).putExtra("hour",CalendarUtil.getCurrentHour())
-        val pendingIntent = PendingIntent.getActivity(
+        val currentTime = Calendar.getInstance().timeInMillis
+        val notificationIntent = Intent(this, NotificationReceiver::class.java).putExtra("day",CalendarUtil.getCurrentDay()).putExtra("hour",CalendarUtil.getCurrentHour())
+        val pendingIntent = PendingIntent.getBroadcast(
             this,
             0,
             notificationIntent,
@@ -98,8 +95,10 @@ class NotificationService : Service() {
             .setContentTitle("Как прошел ваш час?")
             .setContentText("Нажмите, чтобы добавить запись")
             //.setContentText("Нажмите\n" + time)
-            .setSmallIcon(R.drawable.ic_logo)
+            .setSmallIcon(R.drawable.ic_logo_small)
             .setContentIntent(pendingIntent)
+            .setShowWhen(true)
+            .setWhen(currentTime)
             .setAutoCancel(true)
             .setGroup("MY_NOTIFICATION_GROUP")
             .build()
@@ -112,7 +111,6 @@ class NotificationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        isServiceRunning = false
     }
 
     enum class State{
