@@ -30,5 +30,16 @@ object CalendarUtil {
         val currentDate = Calendar.getInstance()
         return currentDate.get(Calendar.HOUR_OF_DAY)
     }
+    fun getYearStartMillis(year: Int): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, Calendar.JANUARY, 1, 0, 0, 0)
+        return calendar.timeInMillis
+    }
+
+    fun getMonthStartMillis(year: Int, month: Int): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, 1, 0, 0, 0)
+        return calendar.timeInMillis
+    }
 
 }

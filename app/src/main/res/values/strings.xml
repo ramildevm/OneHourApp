@@ -1,6 +1,26 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">OneHourApp</string>
     <string name="get_start">Get started</string>
-    <string name="title_activity_start">StartActivity</string>
     <string name="slogan">Make your life organized!</string>
+    <string name="january">January</string>
+    <string name="february">February</string>
+    <string name="march">March</string>
+    <string name="april">April</string>
+    <string name="may">May</string>
+    <string name="june">June</string>
+    <string name="july">July</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">October</string>
+    <string name="november">November</string>
+    <string name="december">December</string>
+    <string name="sleep">Sleep</string>
+    <string name="passive">Passive</string>
+    <string name="recreation">Recreation</string>
+    <string name="friends">Friends</string>
+    <string name="family">Family</string>
+    <string name="reading">Reading</string>
+    <string name="exercise">Exercise</string>
+    <string name="production">Production</string>
+    <string name="work">Work</string>
 </resources>

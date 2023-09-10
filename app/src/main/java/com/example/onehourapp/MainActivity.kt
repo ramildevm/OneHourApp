@@ -8,12 +8,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.example.onehourapp.graphs.RootNavigationGraph
+import com.example.onehourapp.ui.graphs.RootNavigationGraph
 import com.example.onehourapp.helpers.AddNotificationHelper
 import com.example.onehourapp.services.NotificationService
 import com.example.onehourapp.ui.theme.OneHourAppTheme
 import com.example.onehourapp.utils.SharedPreferencesUtil
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -13,7 +13,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.onehourapp.R
 import com.example.onehourapp.receivers.NotificationReceiver
-import com.example.onehourapp.screens.AddRecordDialogActivity
+import com.example.onehourapp.ui.screens.AddRecordDialogActivity
 import com.example.onehourapp.utils.CalendarUtil
 import java.util.Calendar
 import java.util.Timer

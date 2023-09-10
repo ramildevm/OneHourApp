@@ -18,7 +18,7 @@ import java.util.Locale.Category
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        val hour = intent!!.getIntExtra("hour", 0)
+        val hour = intent?.getIntExtra("hour", 0) ?: 8
         val notificationIntent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("day",  CalendarUtil.getCurrentDay())
             putExtra("hour", CalendarUtil.getCurrentHour())
