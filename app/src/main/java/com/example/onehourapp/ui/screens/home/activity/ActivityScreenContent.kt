@@ -392,7 +392,7 @@ fun AddCategoryDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Color) -> Unit,
     categories: State<List<Category>>
-) {
+) { //Todo: updating https://www.youtube.com/watch?v=QCSJfMqQY9A
     Dialog(onDismissRequest = onDismiss ) {
         Card(
             modifier = Modifier
