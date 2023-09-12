@@ -25,12 +25,19 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonColors
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuBoxScope
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -38,6 +45,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -49,19 +57,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -226,79 +238,99 @@ fun CategoryCardContent(
         if (expanded) {
             val activityRecordVM: ActivityRecordViewModel = hiltViewModel()
             val activities = activityVM.getActivities(category.id).collectAsState(initial = emptyList())
+            val categories = categoryVM.allCategories.collectAsState(initial = emptyList())
+            var isAddActivityDialogShowed by remember { mutableStateOf(false) }
             var context = LocalContext.current
-            Column( modifier = Modifier.background(CardCategoryColor), content = {
-                activities.value.forEach{ activity->
-                    var dialogMessage by remember {
-                        mutableStateOf("")
-                    }
-                    var showDialog by remember { mutableStateOf(false) }
-                    val isAnyActivityRecord = activityRecordVM.getActivityRecordsCountByActivityId(activity.id) > 0
-                    val state = rememberDismissState(
-                        confirmStateChange = {
-                            if (it == DismissValue.DismissedToStart){
-                                if(isAnyActivityRecord)
-                                    dialogMessage = context.getString(R.string.delete_message_activity_has_records)
-                                if(activities.value.size == 1)
-                                    dialogMessage = context.getString(R.string.delete_message_activity_is_single)
-                                if(dialogMessage != "")
-                                    showDialog = true
-                            }
-                            dialogMessage == ""
-                        }
-                    )
-                    if(showDialog)
-                        DeleteActivityAlertDialog(
-                            dialogMessage,
-                            onDelete={
-                                showDialog = false
-                                if(activities.value.size==1)
-                                    categoryVM.deleteCategory(category)
-                            }
-                        ) {
-                            showDialog = false
-                        }
-                    SwipeToDismiss(
-                        state = state,
-                        background = {
-                            val color = when(state.dismissDirection){
-                                DismissDirection.EndToStart-> Color.Red
-                                DismissDirection.StartToEnd -> Color.Transparent
-                                null-> Color.Transparent
-                            }
-                            Box(
-                                Modifier
-                                    .padding(20.dp, 4.dp, 8.dp, 4.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(color)
-                                    .fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    modifier = Modifier.align(Alignment.CenterEnd)
-                                )
-                            }
-                        },
-                        directions=setOf(DismissDirection.EndToStart),
-                        dismissContent = {
-                            Card(
-                                elevation = 4.dp,
-                                backgroundColor = CardActivityColor,
-                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(6.dp, 4.dp, 8.dp, 4.dp)
-                                        .background(CardActivityColor)
-                                ) {
-                                    ActivityCardContent(category.color, activity)
-                                }
-                            }
-                        })
-                }
 
+            if(isAddActivityDialogShowed)
+                AddActivityDialog(
+                    onDismiss = {isAddActivityDialogShowed = false },
+                    onConfirm = {name:String, categoryId:Int->
+                        activityVM.insertActivity(Activity(0,name,categoryId))
+                        isAddActivityDialogShowed = false
+                    },
+                    categories = categories,
+                    category = category
+                )
+            Column( modifier = Modifier.background(CardCategoryColor), content = {
+                activities.value.forEach { activity ->
+                    key(activity.hashCode()) {
+                        var dialogMessage by remember {
+                            mutableStateOf("")
+                        }
+                        var showDialog by remember { mutableStateOf(false) }
+                        val isAnyActivityRecord =
+                            activityRecordVM.getActivityRecordsCountByActivityId(activity.id) > 0
+                        val state = rememberDismissState(
+                            confirmStateChange = {
+                                if (it == DismissValue.DismissedToStart) {
+                                    if (isAnyActivityRecord)
+                                        dialogMessage =
+                                            context.getString(R.string.delete_message_activity_has_records)
+                                    if (activities.value.size == 1)
+                                        dialogMessage =
+                                            context.getString(R.string.delete_message_activity_is_single)
+                                    if (dialogMessage != "")
+                                        showDialog = true
+                                    else {
+                                        activityVM.deleteActivity(activity)
+                                    }
+                                }
+                                dialogMessage == ""
+                            }
+                        )
+                        if (showDialog)
+                            DeleteActivityAlertDialog(
+                                dialogMessage,
+                                onDelete = {
+                                    showDialog = false
+                                    if (activities.value.size == 1)
+                                        categoryVM.deleteCategory(category)
+                                }
+                            ) {
+                                showDialog = false
+                            }
+                        SwipeToDismiss(
+                            state = state,
+                            background = {
+                                val color = when (state.dismissDirection) {
+                                    DismissDirection.EndToStart -> Color.Red
+                                    DismissDirection.StartToEnd -> Color.Transparent
+                                    null -> Color.Transparent
+                                }
+                                Box(
+                                    Modifier
+                                        .padding(20.dp, 4.dp, 8.dp, 4.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(color)
+                                        .fillMaxSize()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        modifier = Modifier.align(Alignment.CenterEnd)
+                                    )
+                                }
+                            },
+                            directions = setOf(DismissDirection.EndToStart),
+                            dismissContent = {
+                                Card(
+                                    elevation = 4.dp,
+                                    backgroundColor = CardActivityColor,
+                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(6.dp, 4.dp, 8.dp, 4.dp)
+                                            .background(CardActivityColor)
+                                    ) {
+                                        ActivityCardContent(category.color, activity)
+                                    }
+                                }
+                            })
+                    }
+                }
                 Card(
                     elevation = 4.dp,
                     backgroundColor = CardActivityColor,
@@ -311,12 +343,15 @@ fun CategoryCardContent(
                             .background(CardActivityColor)
                     ) {
                         TextButton(
-                            onClick={},
+                            onClick = {
+                                isAddActivityDialogShowed = true
+                            },
                             modifier = Modifier
-                                .fillMaxWidth()){
+                                .fillMaxWidth()
+                        ) {
                             Text(
                                 text = stringResource(R.string.add),
-                                textAlign= TextAlign.Center,
+                                textAlign = TextAlign.Center,
                                 color = Color.White,
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
@@ -355,15 +390,16 @@ fun ActivityCardContent(categoryColor:String, activity: Activity) {
 @Composable
 fun AddCategoryDialog(
     onDismiss: () -> Unit,
-    categories: State<List<Category>>,
-    onConfirm: (String, Color) -> Unit
+    onConfirm: (String, Color) -> Unit,
+    categories: State<List<Category>>
 ) {
     Dialog(onDismissRequest = onDismiss ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(10.dp),
+                .padding(10.dp)
+                .shadow(30.dp, RoundedCornerShape(16.dp), ambientColor = Color.White, spotColor = Color.Gray),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
@@ -410,10 +446,10 @@ fun AddCategoryDialog(
                             style = TextFieldStyle,
                             modifier = Modifier.padding(10.dp, 0.dp)
                         )
-                        var isError by rememberSaveable { mutableStateOf(false) }
+                        var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
 
                         fun validate(text: String) {
-                            isError = text.isEmpty()
+                            isTextFieldEmpty = text.isEmpty()
                         }
                         OutlinedTextField(
                             modifier = Modifier
@@ -421,15 +457,16 @@ fun AddCategoryDialog(
                                 .fillMaxWidth()
                                 .height(IntrinsicSize.Min),
                             value = text,
-                            isError = isError,
+                            isError = isTextFieldEmpty,
                             textStyle = TextFieldStyle,
                             onValueChange = { newValue ->
                                 text = newValue
                                 validate(text)
                             },
+                            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
                             colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = MainColorSecondRed, cursorColor = MainColorSecondRed)
                         )
-                        if(isError){
+                        if(isTextFieldEmpty){
                             Text(
                                 text = stringResource(R.string.empty_field),
                                 color = MaterialTheme.colors.error,
@@ -440,14 +477,14 @@ fun AddCategoryDialog(
                             )
                         }
                         else
-                        Spacer(Modifier.height(18.dp))
+                            Spacer(Modifier.height(18.dp))
                         Text(
                             text = stringResource(R.string.select_a_color),
                             style = TextFieldStyle,
                             modifier = Modifier.padding(10.dp, 0.dp)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
-                        var isNotSelected by rememberSaveable { mutableStateOf(false) }
+                        var isColorNotSelected by rememberSaveable { mutableStateOf(false) }
                         repeat(4) { rowIndex ->
                             Row(
                                 modifier = Modifier
@@ -476,7 +513,7 @@ fun AddCategoryDialog(
                                                 if (selectedColor == color) {
                                                     selectedColor = null
                                                 } else {
-                                                    isNotSelected = false
+                                                    isColorNotSelected = false
                                                     selectedColor = color
                                                 }
                                             }
@@ -488,7 +525,7 @@ fun AddCategoryDialog(
 
                             }
                         }
-                        if(isNotSelected){
+                        if(isColorNotSelected){
                             Text(
                                 text = stringResource(R.string.color_is_not_selected),
                                 color = MaterialTheme.colors.error,
@@ -510,13 +547,154 @@ fun AddCategoryDialog(
                                      onConfirm(text, selectedColor!!)
                                  }
                                 if(text.isEmpty()){
-                                    isError = true
+                                    isTextFieldEmpty = true
                                 }
                                 if(selectedColor==null ){
-                                    isNotSelected = true
-                                }
+                                    isColorNotSelected = true
+                                }},
+                                Modifier.align(Alignment.CenterStart)) {
+                                Text(stringResource(id = R.string.add), fontSize = 16.sp, color = MainColorSecondRed)
+                            }
+                            TextButton(onClick = onDismiss, Modifier.align(Alignment.CenterEnd)) {
+                                Text(stringResource(id = R.string.cancel), fontSize = 16.sp, color = Color.White)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun AddActivityDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Int) -> Unit,
+    categories: State<List<Category>>,
+    category: Category
+) {
+    Dialog(onDismissRequest = onDismiss ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(10.dp)
+                .shadow(
+                    30.dp,
+                    RoundedCornerShape(16.dp),
+                    ambientColor = Color.White,
+                    spotColor = Color.Gray
+                ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(BackgroundColor)
+                    .wrapContentHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ){
+                var selectedCategory by remember { mutableStateOf(category) }
+                var text by rememberSaveable { mutableStateOf("") }
+                var expanded by remember { mutableStateOf(false) }
 
-                            }, Modifier.align(Alignment.CenterStart)) {
+                Box(
+                    Modifier
+                        .padding(5.dp)
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .background(BackgroundColor)) {
+                    Column(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .background(BackgroundColor),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_activity),
+                            style = TextFieldStyle.copy(fontWeight = FontWeight.Bold, color = MainColorSecondRed),
+                            modifier = Modifier.padding(20.dp, 4.dp)
+                        )
+                        Spacer(Modifier.height(4.dp))
+
+                        Text(
+                            text = stringResource(R.string.category)+":",
+                            style = TextFieldStyle,
+                            modifier = Modifier.padding(14.dp, 0.dp)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {expanded = !expanded}, modifier = Modifier.padding(horizontal = 10.dp)) {
+                            TextField(
+                                value = selectedCategory.name,
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                categories.value.forEach { item ->
+                                    DropdownMenuItem(
+                                        content = { Text(text = item.name) },
+                                        onClick = {
+                                            selectedCategory = item
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = stringResource(id = R.string.input_name),
+                            style = TextFieldStyle,
+                            modifier = Modifier.padding(14.dp, 0.dp)
+                        )
+
+                        var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
+                        fun validate(text: String) {
+                            isTextFieldEmpty = text.isEmpty()
+                        }
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .padding(10.dp, 4.dp)
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min),
+                            value = text,
+                            isError = isTextFieldEmpty,
+                            textStyle = TextFieldStyle,
+                            onValueChange = { newValue ->
+                                text = newValue
+                                validate(text)
+                            },
+                            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = MainColorSecondRed, cursorColor = MainColorSecondRed)
+                        )
+                        if(isTextFieldEmpty){
+                            Text(
+                                text = stringResource(R.string.empty_field),
+                                color = MaterialTheme.colors.error,
+                                style = MaterialTheme.typography.caption,
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .height(18.dp)
+                            )
+                        }
+                        else
+                            Spacer(Modifier.height(16.dp))
+
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)) {
+                            TextButton(onClick = {
+                                 if(text.isNotEmpty()){
+                                     onConfirm(text, selectedCategory.id)
+                                 }
+                                if(text.isEmpty()){
+                                    isTextFieldEmpty = true
+                                }},
+                                Modifier.align(Alignment.CenterStart)) {
                                 Text(stringResource(id = R.string.add), fontSize = 16.sp, color = MainColorSecondRed)
                             }
                             TextButton(onClick = onDismiss, Modifier.align(Alignment.CenterEnd)) {
@@ -542,18 +720,21 @@ fun DeleteActivityAlertDialog(dialogMessage: String, onDelete: () -> Unit, onDis
         },
         confirmButton = {
             Button(
-                onClick = onDelete
+                onClick = onDelete,
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
             ) {
                 Text(stringResource(R.string.yes))
             }
         },
         dismissButton = {
             Button(
-                onClick = onDismiss
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(backgroundColor = MainColorSecondRed)
             ) {
                 Text(stringResource(R.string.cancel))
             }
-        }
+        },
+        modifier = Modifier.shadow(25.dp, ambientColor = Color.White, spotColor = Color.Gray)
     )
 }
 @Composable
@@ -570,13 +751,12 @@ fun ColorButton(color: Color, isUsed: Boolean, isSelected: Boolean, alpha:Float,
         )
         .clickable { onClick() },
         contentAlignment = Alignment.Center){
-    Box(
-        modifier = Modifier
-            .align(Alignment.Center)
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(color = color)
-    )
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(color = color)
+        )
     }
-
 }

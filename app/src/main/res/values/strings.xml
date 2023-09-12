@@ -39,4 +39,6 @@
     <string name="select_a_color">Select a color:</string>
     <string name="empty_field">Field is empty</string>
     <string name="color_is_not_selected">Select a color\n</string>
+    <string name="add_activity">Add activity</string>
+    <string name="category">Category</string>
 </resources>
