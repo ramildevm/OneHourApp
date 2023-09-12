@@ -6,10 +6,13 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.onehourapp.R
+import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.utils.CalendarUtil
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -33,7 +36,6 @@ fun MonthSelectorDialog(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                // ComboBox (DropDownMenu) for selecting a month
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.CenterStart
@@ -52,7 +54,7 @@ fun MonthSelectorDialog(
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
 
-                    )
+                    ) //TODO: CascadeDropDownMenu
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
@@ -100,22 +102,33 @@ fun MonthSelectorDialog(
             ) {
                 Text(text = "Cancel")
             }
-        }
+        },
+        contentColor = MainColorSecondRed
     )
 }
 
 @Composable
 fun ComposeAlertDialogExample(day: Int = CalendarUtil.getCurrentDay(), hour:Int,onDismiss: () -> Unit) {
     val months = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        stringResource(R.string.january),
+        stringResource(R.string.february),
+        stringResource(R.string.march),
+        stringResource(R.string.april),
+        stringResource(R.string.may),
+        stringResource(R.string.june),
+        stringResource(R.string.july),
+        stringResource(R.string.august),
+        stringResource(R.string.september),
+        stringResource(R.string.october),
+        stringResource(R.string.november),
+        stringResource(R.string.december)
     )
-        MonthSelectorDialog(
-            day,
-            hour,
-            months = months,
-            onDismiss = onDismiss
-        ) { selectedMonth, textInput ->
-            onDismiss()
-        }
+    MonthSelectorDialog(
+        day,
+        hour,
+        months = months,
+        onDismiss = onDismiss
+    ) { selectedMonth, textInput ->
+        onDismiss()
+    }
 }

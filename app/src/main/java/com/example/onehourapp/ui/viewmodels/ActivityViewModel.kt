@@ -14,8 +14,6 @@ import javax.inject.Inject
 class ActivityViewModel @Inject constructor(
     private val repository: ActivityRepository
 ): ViewModel() {
-    val deleteResult: MutableLiveData<Boolean> = MutableLiveData()
-
     fun getActivities(id:Int) = repository.getActivitiesByCategoryId(id)
     
     fun insertActivity(activity: Activity){
@@ -30,7 +28,7 @@ class ActivityViewModel @Inject constructor(
     }
     fun deleteActivity(activity: Activity){
         viewModelScope.launch{
-            deleteResult.postValue(repository.deleteActivity(activity))
+            repository.deleteActivity(activity)
         }
     }
 }

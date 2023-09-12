@@ -29,23 +29,50 @@ val Typography = Typography(
     */
 )
 val MainFont = TextStyle(
-fontFamily = FontFamily.Monospace,
-fontWeight = FontWeight.Normal,
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
     fontSize = 20.sp,
     color = Color.White,
     textAlign = TextAlign.Center
 )
-val CalendarDayFont= TextStyle(
+val TextFieldStyle = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    color = Color.White
+)
+val BottomBarLabelFontRu = TextStyle(
+fontFamily = FontFamily.Monospace,
+fontWeight = FontWeight.Bold,
+    fontSize = 7.9.sp,
+    color = Color.White,
+    textAlign = TextAlign.Center
+)
+val BottomBarLabelFontEn = TextStyle(
+fontFamily = FontFamily.Monospace,
+fontWeight = FontWeight.Normal,
+    fontSize = 9.sp,
+    color = Color.White,
+    textAlign = TextAlign.Center
+)
+val CalendarDayFont = TextStyle(
 fontFamily = FontFamily.Monospace,
 fontWeight = FontWeight.Normal,
     fontSize = 8.sp,
     color = Color.White,
     textAlign = TextAlign.Center
 )
-val CalendarCurrentDayFont= TextStyle(
+val CalendarCurrentDayFont = TextStyle(
 fontFamily = FontFamily.Monospace,
 fontWeight = FontWeight.Normal,
     fontSize = 8.sp,
     color = MainColorSecondRed,
     textAlign = TextAlign.Center
+)
+val ActivityListItemFont = TextStyle(
+    color = Color.White,
+    fontWeight = FontWeight.Medium,
+    fontSize = 17.sp,
+    letterSpacing = 0.15.sp,
+
 )

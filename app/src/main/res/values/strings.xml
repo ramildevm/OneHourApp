@@ -23,4 +23,20 @@
     <string name="exercise">Exercise</string>
     <string name="production">Production</string>
     <string name="work">Work</string>
+    <string name="year_stats">Year stats</string>
+    <string name="calendar">Calendar</string>
+    <string name="activity">Activities</string>
+    <string name="settings">Settings</string>
+    <string name="delete_message_activity_has_records">Deleting this activity will delete the activity records.</string>
+    <string name="delete_message_activity_is_single">Deleting this activity will delete the category.</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="warning">Warning!</string>
+    <string name="delete_activity_message_confirmation">Are you sure you want to delete the activity? \n</string>
+    <string name="add_category">Add category</string>
+    <string name="input_name">Input the name:</string>
+    <string name="select_a_color">Select a color:</string>
+    <string name="empty_field">Field is empty</string>
+    <string name="color_is_not_selected">Select a color\n</string>
 </resources>

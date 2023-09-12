@@ -1,5 +1,6 @@
 package com.example.onehourapp.data.repositories
 
+import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.LiveData
 import com.example.onehourapp.data.database.dao.ActivityDao
@@ -22,16 +23,18 @@ class CategoryRepository @Inject constructor(
     fun getCategories(): Flow<List<Category>> {
         return categoryDao.getCategories()
     }
-    suspend fun insertOrUpdateCategory(category: Category){
-        categoryDao.insertUpdateCategory(category)
-    }
-    suspend fun deleteCategory(category: Category): Boolean{
-        val activitiesByCategory = activityDao.getActivitiesByCategoryId(category.id).last()
-        if(activitiesByCategory.isEmpty())
+    suspend fun insertCategory(category: Category) = categoryDao.insertCategory(category)
+
+    suspend fun deleteCategory(category: Category): Boolean {
+        val activitiesByCategory = activityDao.getActivitiesByCategoryId(category.id).first()
+        if (activitiesByCategory.size == 1){
+            activityDao.deleteActivity(activitiesByCategory.first())
             categoryDao.deleteCategory(category)
+        }
         else{
             return false
         }
         return true
     }
+
 }

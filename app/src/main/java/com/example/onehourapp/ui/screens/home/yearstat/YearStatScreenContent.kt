@@ -163,7 +163,7 @@ private fun drawCanvasContent(
         canvas.scale(scale, scale)
         canvas.save()
 
-        val angleY = (0 * (360f / totalColumns) * (PI / 180)).toFloat() - startRotation + canvasRotation
+        val angleY = (0 * (360f / totalColumns) * (PI / 180)).toFloat() - startRotation + (totalDegrees / (360f/1f))
         val rowRadiusY = circleRadius + (27 * (dotRadius + dotSpacing)) * density
         val yOffset = abs(centerY + rowRadiusY * sin(angleY)) / Math.PI
 
@@ -192,8 +192,6 @@ private fun drawCanvasContent(
         var currentMonth = 0
         var lastOffset:Offset? = null
         var firstOffset:Offset? = null
-        var maxY = 0f
-        var maxX = 0f
         for (i in 0 until totalColumns) {
             if(daysInMonths.contains(i) && currentMonth!=11)
                 currentMonth++

@@ -1,11 +1,17 @@
 package com.example.onehourapp.ui.screens.home
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
@@ -30,9 +38,11 @@ import com.example.onehourapp.ui.screens.AddButtonScreen
 import com.example.onehourapp.ui.screens.BottomBarScreen
 import com.example.onehourapp.ui.theme.BottomBarAddColor
 import com.example.onehourapp.ui.theme.BottomBarColor
+import com.example.onehourapp.ui.theme.BottomBarLabelFontEn
+import com.example.onehourapp.ui.theme.BottomBarLabelFontRu
 import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.utils.CalendarUtil
-import dagger.hilt.android.AndroidEntryPoint
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -41,16 +51,16 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
     var isAddBtnClicked by remember { mutableStateOf(false) }
     Scaffold(
         bottomBar = { BottomBar(navController = navController) { isAddBtnClicked = true } }
-    ) {
+    ) {innerPadding->
         if(isAddBtnClicked)
             ComposeAlertDialogExample (
                 day = CalendarUtil.getCurrentDay(),
                 hour = CalendarUtil.getCurrentHour(),
                 onDismiss = {isAddBtnClicked = false}
             )
-
-        HomeNavGraph(navController = navController)
-
+        Box(modifier = Modifier.padding(innerPadding)){
+            HomeNavGraph(navController = navController)
+        }
     }
 }
 
@@ -94,16 +104,30 @@ fun RowScope.AddItem(
 )
  {
      val isAddScreen = screen is AddButtonScreen
+
     BottomNavigationItem(
         label = {
+            var fontStyle = BottomBarLabelFontEn
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val currentLocale = LocalConfiguration.current.locales[0]
+                fontStyle = if (currentLocale.language == "ru") {
+                    BottomBarLabelFontRu
+                } else {
+                    BottomBarLabelFontEn
+                }
+            }
             if(!isAddScreen)
-                Text(text = screen.title, fontSize = 9.sp)
+                Text(text = stringResource(id = screen.title), style = fontStyle,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = (0).dp))
             else
                 Spacer(modifier = Modifier.height(0.dp))
         },
         icon = {
             val modifier = Modifier.size(30.dp)
-            val addScreenModifier = Modifier.offset(y=5.dp).fillMaxSize().align(Alignment.Bottom)
+            val addScreenModifier = Modifier
+                .offset(y = 5.dp)
+                .fillMaxSize()
+                .align(Alignment.Bottom)
             if(isAddScreen)
             Icon (modifier = addScreenModifier ,
                 imageVector = Icons.Rounded.Circle,

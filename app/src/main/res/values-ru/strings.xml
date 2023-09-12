@@ -22,6 +22,22 @@
     <string name="family">Семья</string>
     <string name="reading">Чтение</string>
     <string name="exercise">Упражнения</string>
-    <string name="production">Проддуктивность</string>
+    <string name="production">Продуктивность</string>
     <string name="work">Работа</string>
+    <string name="year_stats">Статистика</string>
+    <string name="calendar">Календарь</string>
+    <string name="activity">Активности</string>
+    <string name="settings">Настройки</string>
+    <string name="delete_message_activity_has_records">Удаление этой активности приведет к удалению записей активности.</string>
+    <string name="delete_message_activity_is_single">Удаление этой активности приведет к удалению категории.</string>
+    <string name="add">Добавить</string>
+    <string name="cancel">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="warning">Внимание!</string>
+    <string name="delete_activity_message_confirmation">Вы уверены что хотите удалить эту активность?</string>
+    <string name="add_category">Добавление категории</string>
+    <string name="input_name">Введите название:</string>
+    <string name="select_a_color">Выберите цвет:</string>
+    <string name="empty_field">Пустое поле</string>
+    <string name="color_is_not_selected">Выберите цвет</string>
 </resources>

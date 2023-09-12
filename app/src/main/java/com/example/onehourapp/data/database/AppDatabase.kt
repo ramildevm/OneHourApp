@@ -1,11 +1,9 @@
 package com.example.onehourapp.data.database
 
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.onehourapp.MainApp
 import com.example.onehourapp.R
 import com.example.onehourapp.data.database.dao.ActivityDao
 import com.example.onehourapp.data.database.dao.ActivityRecordDao
@@ -37,18 +35,29 @@ abstract class AppDatabase : RoomDatabase() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            val dao = database.get().categoryDao
+            val categoryDao = database.get().categoryDao
+            val activityDao = database.get().activityDao
 
             applicationScope.launch {
-                dao.insertUpdateCategory(Category(1,  applicationContext.getString(R.string.sleep),"#092F79"))
-                dao.insertUpdateCategory(Category(2,  applicationContext.getString(R.string.passive),"#4784ED"))
-                dao.insertUpdateCategory(Category(3,  applicationContext.getString(R.string.recreation), "#9DD1FF"))
-                dao.insertUpdateCategory(Category(4,  applicationContext.getString(R.string.friends), "#FF9BFC"))
-                dao.insertUpdateCategory(Category(5,  applicationContext.getString(R.string.family), "#590070"))
-                dao.insertUpdateCategory(Category(6,  applicationContext.getString(R.string.reading), "#01A92D"))
-                dao.insertUpdateCategory(Category(7,  applicationContext.getString(R.string.exercise), "#ECFF00"))
-                dao.insertUpdateCategory(Category(8,  applicationContext.getString(R.string.production), "#FF8F2C"))
-                dao.insertUpdateCategory(Category(9,  applicationContext.getString(R.string.work), "#FF0000"))
+                categoryDao.insertCategory(Category(1,  applicationContext.getString(R.string.sleep),"#092F79"))
+                categoryDao.insertCategory(Category(2,  applicationContext.getString(R.string.passive),"#4784ED"))
+                categoryDao.insertCategory(Category(3,  applicationContext.getString(R.string.recreation), "#9DD1FF"))
+                categoryDao.insertCategory(Category(4,  applicationContext.getString(R.string.friends), "#FF9BFC"))
+                categoryDao.insertCategory(Category(5,  applicationContext.getString(R.string.family), "#590070"))
+                categoryDao.insertCategory(Category(6,  applicationContext.getString(R.string.reading), "#01A92D"))
+                categoryDao.insertCategory(Category(7,  applicationContext.getString(R.string.exercise), "#ECFF00"))
+                categoryDao.insertCategory(Category(8,  applicationContext.getString(R.string.production), "#FF8F2C"))
+                categoryDao.insertCategory(Category(9,  applicationContext.getString(R.string.work), "#FF0000"))
+
+                activityDao.insertUpdateActivity(Activity(1,  applicationContext.getString(R.string.sleep),1))
+                activityDao.insertUpdateActivity(Activity(2,  applicationContext.getString(R.string.passive),2))
+                activityDao.insertUpdateActivity(Activity(3,  applicationContext.getString(R.string.recreation), 3))
+                activityDao.insertUpdateActivity(Activity(4,  applicationContext.getString(R.string.friends), 4))
+                activityDao.insertUpdateActivity(Activity(5,  applicationContext.getString(R.string.family), 5))
+                activityDao.insertUpdateActivity(Activity(6,  applicationContext.getString(R.string.reading), 6))
+                activityDao.insertUpdateActivity(Activity(7,  applicationContext.getString(R.string.exercise), 7))
+                activityDao.insertUpdateActivity(Activity(8,  applicationContext.getString(R.string.production), 8))
+                activityDao.insertUpdateActivity(Activity(9,  applicationContext.getString(R.string.work), 9))
             }
         }
     }

@@ -19,6 +19,10 @@ class ActivityRecordViewModel @Inject constructor(
 ): ViewModel() {
     fun getActivityRecordsInInterval(startTime:Long, endTime:Long) = repository.getActivityRecordsByInterval(startTime,endTime)
     fun getActivityRecordsByYear(year:Int) = repository.getActivityRecordsByYear(year)
+    fun getActivityRecordsCountByActivityId(activityId:Int) : Int {
+         return repository.getActivityRecordsCountByActivity(activityId)
+
+    }
     fun getActivityRecordsByMonth(year:Int, month:Int) = repository.getActivityRecordsByMonth(year,month)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 

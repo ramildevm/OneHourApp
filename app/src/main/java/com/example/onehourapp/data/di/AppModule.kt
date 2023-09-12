@@ -28,6 +28,7 @@ object AppModule {
     )
         .fallbackToDestructiveMigration()
         .addCallback(callback)
+        .allowMainThreadQueries()
         .build()
 
     @Singleton

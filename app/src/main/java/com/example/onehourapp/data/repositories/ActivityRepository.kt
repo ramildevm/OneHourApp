@@ -4,6 +4,7 @@ import com.example.onehourapp.data.database.dao.ActivityDao
 import com.example.onehourapp.data.database.dao.ActivityRecordDao
 import com.example.onehourapp.data.models.Activity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
 import javax.inject.Inject
 import javax.inject.Named
@@ -18,13 +19,7 @@ class ActivityRepository @Inject constructor(
     suspend fun insertOrUpdateActivity(activity: Activity){
         activityDao.insertUpdateActivity(activity)
     }
-    suspend fun deleteActivity(activity: Activity): Boolean {
-        val activityRecordsByActivity = activityRecordDao.getActivityRecordsByActivityId(activity.id).last()
-        if(activityRecordsByActivity.isEmpty())
-            activityDao.deleteActivity(activity)
-        else{
-            return false
-        }
-        return true
+    suspend fun deleteActivity(activity: Activity) {
+        activityDao.deleteActivity(activity)
     }
 }

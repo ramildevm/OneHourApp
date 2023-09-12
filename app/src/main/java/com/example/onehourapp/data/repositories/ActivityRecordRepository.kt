@@ -14,6 +14,9 @@ import javax.inject.Named
 class ActivityRecordRepository @Inject constructor(
     @Named("activityRecord") private val activityRecordDao: ActivityRecordDao
 ){
+    fun getActivityRecordsCountByActivity(activityId:Int) :Int{
+        return activityRecordDao.getActivityRecordsCountByActivityId(activityId)
+    }
     fun getActivityRecordsByInterval(startTimestamp:Long, endTimeStamp:Long) :Flow<List<ActivityRecord>>{
         return activityRecordDao.getActivityRecordsByInterval(startTimestamp,endTimeStamp)
     }

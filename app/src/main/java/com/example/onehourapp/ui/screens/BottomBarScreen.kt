@@ -7,36 +7,36 @@ import com.example.onehourapp.ui.helpers.IconResource
 
 sealed class BottomBarScreen(
     val route: String,
-    val title: String,
+    val title: Int,
     val icon: IconResource,
 ) {
     object YearStat : BottomBarScreen(
         route = "YEARSTAT",
-        title = "Year stats",
+        title = R.string.year_stats,
         icon = IconResource.fromDrawableResource(R.drawable.year_stat_icon)
     )
 
     object Calendar : BottomBarScreen(
         route = "CALENDAR",
-        title = "Calendar",
+        title = R.string.calendar,
         icon = IconResource.fromImageVector(Icons.Rounded.CalendarToday)
     )
 
     object Add : BottomBarScreen(
         route = "ADD",
-        title = "",
+        title = 0,
         icon = IconResource.fromDrawableResource(R.drawable.add_circle_icon)
     ), AddButtonScreen
 
     object Activity : BottomBarScreen(
         route = "ACTIVITY",
-        title = "Activity",
+        title = R.string.activity,
         icon = IconResource.fromImageVector(Icons.Rounded.ViewList)
     )
 
     object Settings : BottomBarScreen(
         route = "SETTINGS",
-        title = "Settings",
+        title = R.string.settings,
         icon = IconResource.fromImageVector(Icons.Rounded.Settings)
     )
 }

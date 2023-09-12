@@ -1,5 +1,6 @@
 package com.example.onehourapp.ui.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,21 +28,17 @@ class CategoryViewModel @Inject constructor(
     private val repository: CategoryRepository
 ): ViewModel() {
     internal val allCategories: Flow<List<Category>> = repository.getCategories()
-    val deleteResult: MutableLiveData<Boolean> = MutableLiveData()
-
+    val insertResult = MutableLiveData<Int>()
     fun insertCategory(category: Category){
         viewModelScope.launch{
-            repository.insertOrUpdateCategory(category)
-        }
-    }
-    fun updateCategory(category: Category){
-        viewModelScope.launch{
-            repository.insertOrUpdateCategory(category)
+            val id = repository.insertCategory(category)
+            insertResult.postValue(id.toInt())
         }
     }
     fun deleteCategory(category: Category){
         viewModelScope.launch{
-           deleteResult.postValue(repository.deleteCategory(category))
+            repository.deleteCategory(category)
         }
     }
+
 }
