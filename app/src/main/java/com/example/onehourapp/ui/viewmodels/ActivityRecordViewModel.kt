@@ -1,5 +1,6 @@
 package com.example.onehourapp.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.repositories.ActivityRecordRepository
 import com.example.onehourapp.data.repositories.ActivityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.Month

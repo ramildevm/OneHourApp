@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
@@ -19,7 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mContext = getApplicationContext()
+
+        val mContext = applicationContext
         val isNotificationsRunning = SharedPreferencesUtil.getSharedBooleanData(this,"isNotificationsRunning")
         if(!isNotificationsRunning){AddNotificationHelper.createNotificationChannel(mContext)
             AddNotificationHelper.scheduleRepeatingRTCNotification(mContext,8 ,0 )
@@ -30,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         }
         setContent {
-            OneHourAppTheme {
+            OneHourAppTheme(darkTheme = true) {
                 RootNavigationGraph(navController = rememberNavController())
             }
         }

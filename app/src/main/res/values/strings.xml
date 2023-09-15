@@ -41,4 +41,10 @@
     <string name="color_is_not_selected">Select a color\n</string>
     <string name="add_activity">Add activity</string>
     <string name="category">Category</string>
+    <string name="adding_a_record">Adding a record</string>
+    <string name="select_a_date">Select a date:</string>
+    <string name="select_an_activity">Select an activity:</string>
+    <string name="select_activity_start_hour">Start time:</string>
+    <string name="select_activity_end_hour">End time:</string>
+    <string name="successfull_records_add">Records were added successfully</string>
 </resources>

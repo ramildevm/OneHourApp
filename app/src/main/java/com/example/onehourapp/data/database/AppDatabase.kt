@@ -49,15 +49,15 @@ abstract class AppDatabase : RoomDatabase() {
                 categoryDao.insertCategory(Category(8,  applicationContext.getString(R.string.production), "#FF8F2C"))
                 categoryDao.insertCategory(Category(9,  applicationContext.getString(R.string.work), "#FF0000"))
 
-                activityDao.insertUpdateActivity(Activity(1,  applicationContext.getString(R.string.sleep),1))
-                activityDao.insertUpdateActivity(Activity(2,  applicationContext.getString(R.string.passive),2))
-                activityDao.insertUpdateActivity(Activity(3,  applicationContext.getString(R.string.recreation), 3))
-                activityDao.insertUpdateActivity(Activity(4,  applicationContext.getString(R.string.friends), 4))
-                activityDao.insertUpdateActivity(Activity(5,  applicationContext.getString(R.string.family), 5))
-                activityDao.insertUpdateActivity(Activity(6,  applicationContext.getString(R.string.reading), 6))
-                activityDao.insertUpdateActivity(Activity(7,  applicationContext.getString(R.string.exercise), 7))
-                activityDao.insertUpdateActivity(Activity(8,  applicationContext.getString(R.string.production), 8))
-                activityDao.insertUpdateActivity(Activity(9,  applicationContext.getString(R.string.work), 9))
+                activityDao.insertActivity(Activity(1,  applicationContext.getString(R.string.sleep),1))
+                activityDao.insertActivity(Activity(2,  applicationContext.getString(R.string.passive),2))
+                activityDao.insertActivity(Activity(3,  applicationContext.getString(R.string.recreation), 3))
+                activityDao.insertActivity(Activity(4,  applicationContext.getString(R.string.friends), 4))
+                activityDao.insertActivity(Activity(5,  applicationContext.getString(R.string.family), 5))
+                activityDao.insertActivity(Activity(6,  applicationContext.getString(R.string.reading), 6))
+                activityDao.insertActivity(Activity(7,  applicationContext.getString(R.string.exercise), 7))
+                activityDao.insertActivity(Activity(8,  applicationContext.getString(R.string.production), 8))
+                activityDao.insertActivity(Activity(9,  applicationContext.getString(R.string.work), 9))
             }
         }
     }

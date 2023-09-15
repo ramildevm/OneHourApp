@@ -11,7 +11,7 @@ import androidx.compose.ui.text.TextStyle
 fun NumberPicker(
     modifier: Modifier = Modifier,
     label: (Int) -> String = {
-        it.toString()
+        String.format("%02d",it)
     },
     value: Int,
     onValueChange: (Int) -> Unit,
@@ -19,7 +19,7 @@ fun NumberPicker(
     range: Iterable<Int>,
     textStyle: TextStyle = LocalTextStyle.current,
 ) {
-    ListItemPicker(
+    HorizontalListItemPicker(
         modifier = modifier,
         label = label,
         value = value,

@@ -36,7 +36,6 @@ import androidx.compose.material.DismissValue
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuBoxScope
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -51,7 +50,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.rounded.Circle
+import androidx.compose.material.icons.rounded.Sort
 import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -84,16 +85,21 @@ import androidx.navigation.NavHostController
 import com.example.onehourapp.R
 import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.Category
+import com.example.onehourapp.helpers.SortingHelper
 import com.example.onehourapp.ui.helpers.toHexString
 import com.example.onehourapp.ui.theme.ActivityListItemFont
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.CardActivityColor
 import com.example.onehourapp.ui.theme.CardCategoryColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.ui.theme.SortItemColor
 import com.example.onehourapp.ui.theme.TextFieldStyle
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import me.saket.cascade.CascadeDropdownMenu
 
 
 @Composable
@@ -101,13 +107,16 @@ fun ActivityScreenContent(navController: NavHostController) {
     ActivitiesList()
 }
 
+
 @Composable
 fun ActivitiesList() {
     val categoryVM: CategoryViewModel = hiltViewModel()
     val activityVM: ActivityViewModel = hiltViewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val categories = categoryVM.allCategories.collectAsState(initial = emptyList())
+    val categories = categoryVM.getCategories().collectAsState(
+        initial = emptyList()
+    )
 
     var isAddBtnClicked by remember { mutableStateOf(false) }
 
@@ -121,7 +130,7 @@ fun ActivitiesList() {
                 isAddBtnClicked = false
             },
             onDismiss = { isAddBtnClicked = false },
-            categories = categories
+            categories = categories.value
         )
     }
     Column(
@@ -130,17 +139,78 @@ fun ActivitiesList() {
             .background(BackgroundColor),
         verticalArrangement = Arrangement.Center
     ){
-        Text(
-            text = stringResource(id = R.string.activity),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    BackgroundColor
-                ),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
-            color = Color.Red
-        )
+        Box(modifier = Modifier
+            .fillMaxWidth()) {
+            Text(
+                text = stringResource(id = R.string.activity),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        BackgroundColor
+                    ),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
+                color = Color.Red
+            )
+            var expandedCascadeList by remember {
+                mutableStateOf(false)
+            }
+            IconButton(modifier = Modifier.align(Alignment.CenterEnd), onClick = {expandedCascadeList=true  }) {
+                Icon(imageVector = Icons.Rounded.Sort, contentDescription = null)
+            }
+            Box(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .align(Alignment.CenterEnd)) {
+                CascadeDropdownMenu(
+                    modifier = Modifier.background(Color.Transparent).shadow(10.dp, ambientColor = Color.Black),
+                    expanded = expandedCascadeList,
+                    onDismissRequest = { expandedCascadeList = false }) {
+                    androidx.compose.material.DropdownMenuItem(
+                        onClick = {
+                            categoryVM.sortType = CategoryViewModel.SortType.DEFAULT
+                            expandedCascadeList = false
+                                  },
+                        modifier = Modifier
+                            .background(SortItemColor)
+                            .align(Alignment.End)
+                    ) {
+                        Row {
+                            Icon(imageVector = Icons.Default.Sort, contentDescription = null)
+                            Text("By default", Modifier.padding(horizontal = 10.dp))
+                        }
+                    }
+                    androidx.compose.material.DropdownMenuItem(
+                        onClick = {
+                            categoryVM.sortType = CategoryViewModel.SortType.NAME
+                            expandedCascadeList = false
+                        },
+                        modifier = Modifier
+                            .background(SortItemColor)
+                            .align(Alignment.End)
+                    ) {
+                        Row {
+                            Icon(imageVector = Icons.Default.Sort, contentDescription = null)
+                            Text("By name", Modifier.padding(horizontal = 10.dp))
+                        }
+                    }
+                    androidx.compose.material.DropdownMenuItem(
+                        onClick = {
+                            categoryVM.sortType = CategoryViewModel.SortType.COLOR
+                            expandedCascadeList = false
+                        },
+                        modifier = Modifier
+                            .background(SortItemColor)
+                            .align(Alignment.End)
+                    ) {
+                        Row {
+                            Icon(imageVector = Icons.Default.Sort, contentDescription = null)
+                            Text("By color", Modifier.padding(horizontal = 10.dp))
+                        }
+                    }
+                }
+            }
+        }
         LazyColumn(
             state = rememberLazyListState(),
             modifier = Modifier
@@ -148,8 +218,7 @@ fun ActivitiesList() {
                 .background(BackgroundColor)
                 .padding(vertical = 4.dp)
         ) {
-            itemsIndexed(
-                items = categories.value) { _, category ->
+            itemsIndexed(items = categories.value) { _, category ->
                     var expanded by remember {
                         mutableStateOf(false)
                     }
@@ -286,6 +355,7 @@ fun CategoryCardContent(
                                     showDialog = false
                                     if (activities.value.size == 1)
                                         categoryVM.deleteCategory(category)
+                                    activityVM.deleteActivity(activity)
                                 }
                             ) {
                                 showDialog = false
@@ -391,7 +461,7 @@ fun ActivityCardContent(categoryColor:String, activity: Activity) {
 fun AddCategoryDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Color) -> Unit,
-    categories: State<List<Category>>
+    categories:List<Category>
 ) { //Todo: updating https://www.youtube.com/watch?v=QCSJfMqQY9A
     Dialog(onDismissRequest = onDismiss ) {
         Card(
@@ -399,7 +469,12 @@ fun AddCategoryDialog(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(10.dp)
-                .shadow(30.dp, RoundedCornerShape(16.dp), ambientColor = Color.White, spotColor = Color.Gray),
+                .shadow(
+                    30.dp,
+                    RoundedCornerShape(16.dp),
+                    ambientColor = Color.White,
+                    spotColor = Color.Gray
+                ),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
@@ -418,7 +493,7 @@ fun AddCategoryDialog(
                     Color(0xFFB100B5), Color(0xFFFF9BFC), Color(0xFFFF00B8)
                 )
 
-                val usedColors =  categories.value.map {  Color(it.color.toColorInt()) }
+                val usedColors =  categories.map {  Color(it.color.toColorInt()) }
 
                 var selectedColor by remember { mutableStateOf<Color?>(null) }
                 var text by rememberSaveable { mutableStateOf("") }

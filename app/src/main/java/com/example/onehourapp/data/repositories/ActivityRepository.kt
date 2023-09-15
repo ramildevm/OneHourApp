@@ -16,8 +16,8 @@ class ActivityRepository @Inject constructor(
     fun getActivitiesByCategoryId(id:Int): Flow<List<Activity>> {
         return activityDao.getActivitiesByCategoryId(id)
     }
-    suspend fun insertOrUpdateActivity(activity: Activity){
-        activityDao.insertUpdateActivity(activity)
+    suspend fun insertActivity(activity: Activity) : Long {
+        return activityDao.insertActivity(activity)
     }
     suspend fun deleteActivity(activity: Activity) {
         activityDao.deleteActivity(activity)

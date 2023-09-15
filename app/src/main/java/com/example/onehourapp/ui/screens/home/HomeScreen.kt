@@ -43,6 +43,7 @@ import com.example.onehourapp.ui.theme.BottomBarLabelFontRu
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.utils.CalendarUtil
+import java.util.Calendar
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -54,7 +55,7 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
     ) {innerPadding->
         if(isAddBtnClicked)
             ComposeAlertDialogExample (
-                day = CalendarUtil.getCurrentDay(),
+                date = Calendar.getInstance().timeInMillis,
                 hour = CalendarUtil.getCurrentHour(),
                 onDismiss = {isAddBtnClicked = false}
             )

@@ -14,16 +14,13 @@ import javax.inject.Inject
 class ActivityViewModel @Inject constructor(
     private val repository: ActivityRepository
 ): ViewModel() {
+    val insertResult = MutableLiveData<Int>()
     fun getActivities(id:Int) = repository.getActivitiesByCategoryId(id)
     
     fun insertActivity(activity: Activity){
         viewModelScope.launch{
-            repository.insertOrUpdateActivity(activity)
-        }
-    }
-    fun updateActivity(activity: Activity){
-        viewModelScope.launch{
-            repository.insertOrUpdateActivity(activity)
+            val id = repository.insertActivity(activity)
+            insertResult.postValue(id.toInt())
         }
     }
     fun deleteActivity(activity: Activity){

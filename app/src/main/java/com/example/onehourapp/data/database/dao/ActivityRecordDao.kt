@@ -22,7 +22,7 @@ interface ActivityRecordDao {
     fun getActivityRecordsCountByActivityId(id:Int): Int
 
     @Query("SELECT * FROM ActivityRecord WHERE timestamp=:timestamp")
-    fun getActivityRecordByTimeStamp(timestamp: Long) : ActivityRecord
+    fun getActivityRecordByTimeStamp(timestamp: Long) : ActivityRecord?
 
     @Upsert
     suspend fun insertActivityRecord(activityRecord: ActivityRecord)

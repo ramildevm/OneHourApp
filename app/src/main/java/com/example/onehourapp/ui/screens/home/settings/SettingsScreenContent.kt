@@ -23,6 +23,7 @@ import androidx.compose.material.SwitchColors
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,21 +82,22 @@ fun SettingsContent(){
                 var pickerValue by remember { mutableStateOf(start) }
 
                 NumberPicker(
-                    modifier = Modifier.wrapContentWidth().align(Alignment.CenterEnd),
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .align(Alignment.CenterEnd),
                     value = pickerValue,
                     range = 0..23,
                     dividersColor = MainColorSecondRed,
                     textStyle = MainFont,
-                    onValueChange = {
-                        pickerValue = it
+                    onValueChange = { value ->
+                        pickerValue = value
                     }
                 )
             }
             Box(modifier = Modifier.fillMaxWidth()){
                 Text(modifier = Modifier.align(Alignment.CenterStart), text = "Start", style = MainFont, textAlign = TextAlign.Center)
-                var pickerValue by remember { mutableStateOf(end) }
+                var pickerValue by remember { mutableIntStateOf(0) }
                 NumberPicker(
-                    modifier = Modifier.wrapContentWidth().align(Alignment.CenterEnd),
                     value = pickerValue,
                     range = 0..23,
                     dividersColor = MainColorSecondRed,

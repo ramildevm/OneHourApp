@@ -33,10 +33,17 @@ class ActivityRecordRepository @Inject constructor(
     fun getActivityRecordByTime(year: Int, month: Int, day:Int, hour:Int): ActivityRecord {
         val time = Calendar.getInstance()
         time.set(year,month,day,hour,0,0)
-        return activityRecordDao.getActivityRecordByTimeStamp(time.timeInMillis)
+        time.set(Calendar.MILLISECOND, 0)
+        return activityRecordDao.getActivityRecordByTimeStamp(time.timeInMillis)!!
     }
 
-    suspend fun insertOrUpdateActivityRecord(activityRecord: ActivityRecord) = activityRecordDao.insertActivityRecord(activityRecord)
+    suspend fun insertOrUpdateActivityRecord(activityRecord: ActivityRecord) {
+        val oldActivityRecord = activityRecordDao.getActivityRecordByTimeStamp(activityRecord.timestamp)
+        if(oldActivityRecord==null)
+            activityRecordDao.insertActivityRecord(activityRecord)
+        else
+            activityRecordDao.insertActivityRecord(ActivityRecord(oldActivityRecord.id,activityRecord.activityId,activityRecord.timestamp))
+    }
     suspend fun deleteActivityRecord(activityRecord: ActivityRecord) = activityRecordDao.deleteActivityRecord(activityRecord)
 
 }
