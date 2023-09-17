@@ -47,4 +47,9 @@
     <string name="select_an_activity">Выберите активность:</string>
     <string name="select_activity_start_hour">Время начала:</string>
     <string name="select_activity_end_hour">Время окончания:</string>
+    <string name="successfull_records_add">Записи успешно добавлены</string>
+    <string name="time">Время:</string>
+    <string name="switch_to">Переключиться на</string>
+    <string name="slider">ползунок</string>
+    <string name="scrolling">прокрутку</string>
 </resources>

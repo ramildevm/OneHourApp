@@ -535,7 +535,8 @@ fun AddCategoryDialog(
                             isError = isTextFieldEmpty,
                             textStyle = TextFieldStyle,
                             onValueChange = { newValue ->
-                                text = newValue
+                                if(newValue.length <= 50)
+                                    text = newValue
                                 validate(text)
                             },
                             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
@@ -739,7 +740,8 @@ fun AddActivityDialog(
                             isError = isTextFieldEmpty,
                             textStyle = TextFieldStyle,
                             onValueChange = { newValue ->
-                                text = newValue
+                                if(newValue.length <= 50)
+                                    text = newValue
                                 validate(text)
                             },
                             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),

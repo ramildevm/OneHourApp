@@ -47,4 +47,8 @@
     <string name="select_activity_start_hour">Start time:</string>
     <string name="select_activity_end_hour">End time:</string>
     <string name="successfull_records_add">Records were added successfully</string>
+    <string name="time">Time:</string>
+    <string name="switch_to">Switch to</string>
+    <string name="slider">the slider</string>
+    <string name="scrolling">scrolling</string>
 </resources>

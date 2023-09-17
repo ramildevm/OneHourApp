@@ -115,7 +115,7 @@ fun <T> HorizontalListItemPicker(
             )
             Box(
                 modifier = Modifier
-                    .padding(horizontal = horizontalMargin, vertical = 20.dp)
+                    .padding(horizontal = horizontalMargin, vertical = 10.dp)
                     .offset { IntOffset(y = 0, x = coercedAnimatedOffset.roundToInt()) }
             ) {
                 val baseLabelModifier = Modifier.align(Alignment.Center)

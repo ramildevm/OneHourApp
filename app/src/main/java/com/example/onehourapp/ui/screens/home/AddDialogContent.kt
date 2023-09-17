@@ -1,7 +1,6 @@
 package com.example.onehourapp.ui.screens.home
 
 import android.app.DatePickerDialog
-import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -12,6 +11,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.LineAxis
+import androidx.compose.material.icons.filled.ShapeLine
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -78,7 +81,7 @@ fun MonthSelectorDialog(
 
 
     var pickerEndValue by remember { mutableIntStateOf(hour) }
-    var pickerStartValue by remember { mutableIntStateOf(pickerEndValue-1) }
+    var pickerStartValue by remember { mutableIntStateOf(if(pickerEndValue==0) 23 else pickerEndValue-1) }
 
     AlertDialog(
         backgroundColor = BackgroundColor,
@@ -144,7 +147,7 @@ fun MonthSelectorDialog(
                             OutlinedTextField(
                                 label = { Text(text = categories.value.find { category ->  category.id == selectedCategoryId}!!.name) },
                                 value = selectedActivityName,
-                                onValueChange = { selectedActivityName = it },
+                                onValueChange = { if(it.length <= 50) selectedActivityName = it },
                                 readOnly = false,
                                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
                                 trailingIcon = {
@@ -260,60 +263,122 @@ fun MonthSelectorDialog(
                 }
                 else
                     Spacer(modifier = Modifier.height(16.dp))
-
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.select_activity_start_hour),
-                        softWrap = true,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colors.onSurface,
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .align(Alignment.CenterVertically)
-                    )
-                    Box(
-                        Modifier
-                            .weight(0.5f)
-                            .height(80.dp)
-                            .offset(y=(-10).dp)
-                    ) {
-                        NumberPicker(
+                var isSlider by remember{ mutableStateOf(false) }
+                if(!isSlider) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.select_activity_start_hour),
+                            softWrap = true,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colors.onSurface,
                             modifier = Modifier
-                                .wrapContentWidth()
-                                .align(Alignment.CenterEnd),value = pickerStartValue, onValueChange = {pickerStartValue = it},
-                            range = 0 until if(pickerEndValue!=0)pickerEndValue else 24,
-                            dividersColor = MainColorSecondRed,
-                            textStyle = TextStyle.Default.copy(fontSize = 16.sp)
+                                .weight(0.5f)
+                                .align(Alignment.CenterVertically)
                         )
+                        Box(
+                            Modifier
+                                .weight(0.5f)
+                                .height(60.dp)
+                        ) {
+                            NumberPicker(
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .align(Alignment.CenterEnd),
+                                value = pickerStartValue,
+                                onValueChange = { pickerStartValue = it },
+                                range = 0 until if (pickerEndValue != 0) pickerEndValue else 24,
+                                dividersColor = MainColorSecondRed,
+                                textStyle = TextStyle.Default.copy(fontSize = 16.sp)
+                            )
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.select_activity_end_hour),
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colors.onSurface,
+                            softWrap = true,
+                            modifier = Modifier
+                                .weight(0.5f)
+                        )
+                        Box(
+                            Modifier
+                                .weight(0.5f)
+                                .height(60.dp)
+                                .width(150.dp)
+                        ) {
+                            NumberPicker(
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .align(Alignment.Center),
+                                value = pickerEndValue,
+                                onValueChange = {
+                                    pickerEndValue = it
+                                    if (pickerStartValue >= it)
+                                        pickerStartValue = if (it != 0) it - 1 else 23
+                                },
+                                range = 0..(if (selectedDateMillis != date) 23 else hour),
+                                dividersColor = MainColorSecondRed,
+                                textStyle = TextStyle.Default.copy(fontSize = 16.sp)
+                            )
+                        }
                     }
                 }
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.select_activity_end_hour),
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colors.onSurface,
-                        softWrap = true,
-                        modifier = Modifier
-                            .weight(0.5f)
+                else{
+                    val start = if(hour==0)23f else (hour-1).toFloat()
+                    val end = if(hour==0)24f else hour.toFloat()
+                    var sliderPosition by remember { mutableStateOf(start..end) }
+                    Box(Modifier.fillMaxWidth()) {
+                        Text(stringResource(id = R.string.time))
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            text = "${sliderPosition.start.toInt()}  -  ${sliderPosition.endInclusive.toInt()}",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    RangeSlider(
+                        steps = end.toInt()-1,
+                        value = sliderPosition,
+                        onValueChange = {
+                            sliderPosition = if(it.start < it.endInclusive)
+                                it
+                            else
+                                it.endInclusive-1..it.endInclusive
+                            if(it.start == it.endInclusive && it.endInclusive == 0f)
+                                sliderPosition = it.start..it.start+1
+                                        },
+                        valueRange = 0f..end,
+                        onValueChangeFinished = {
+                            pickerStartValue = sliderPosition.start.toInt()
+                            pickerEndValue = sliderPosition.endInclusive.toInt()
+                        }
                     )
-                    Box(
-                        Modifier
-                            .weight(0.5f)
-                            .height(80.dp)
-                            .offset(y=(-10).dp)
-                            .width(150.dp)
-                    ) {
-                        NumberPicker(
-                            modifier = Modifier
-                                .wrapContentWidth()
-                                .align(Alignment.Center),
-                            value = pickerEndValue,
-                            onValueChange = { pickerEndValue = it
-                                if(pickerStartValue>=it)
-                                    pickerStartValue = if(it!=0) it-1 else 23},
-                            range = 0..(if(selectedDateMillis != date) 23 else hour),
-                            dividersColor = MainColorSecondRed,
-                            textStyle = TextStyle.Default.copy(fontSize = 16.sp)
+                    Row(Modifier.padding(horizontal = 4.dp)){
+                        val step = when(end.toInt()){
+                            in 0 until 12 -> 1
+                            in 12 until 18 -> 2
+                            in 18..24 -> 3
+                            else -> 1
+                        }
+                        for (i in 0..end.toInt() step step){
+                            Text(String.format("%02d",i))
+                            if(i!=end.toInt())
+                                Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+                if(isSlider)
+                    Spacer(modifier = Modifier.size(30.dp))
+                TextButton(onClick = { isSlider = !isSlider }) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = if(isSlider) Icons.Default.DateRange else Icons.Default.Timeline, contentDescription = null)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            color = Color.LightGray,
+                            text = stringResource(R.string.switch_to) + " " + if (!isSlider) stringResource(
+                                R.string.slider
+                            ) else stringResource(R.string.scrolling)
                         )
                     }
                 }
@@ -352,7 +417,6 @@ fun MonthSelectorDialog(
         }
     )
 }
-
 fun createActivityRecord(
     selectedDateMillis: Long,
     pickerStartValue: Int,
@@ -361,7 +425,7 @@ fun createActivityRecord(
     selectedActivityId: Int
 ) {
     val startDate = Calendar.getInstance()
-    startDate.timeInMillis = selectedDateMillis - if(pickerEndValue==0) 86400000 else 0
+    startDate.timeInMillis = selectedDateMillis - if(pickerEndValue==0 || pickerEndValue==24) 86400000 else 0
     startDate.set(Calendar.HOUR_OF_DAY, pickerStartValue)
     startDate.set(Calendar.MINUTE, 0)
     startDate.set(Calendar.SECOND, 0)
