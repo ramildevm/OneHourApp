@@ -16,7 +16,10 @@ class ActivityViewModel @Inject constructor(
 ): ViewModel() {
     val insertResult = MutableLiveData<Int>()
     fun getActivities(id:Int) = repository.getActivitiesByCategoryId(id)
-    
+    fun getActivities() = repository.getActivities()
+
+    fun getActivityById(activityId: Int): Activity = repository.getActivityById(activityId)
+
     fun insertActivity(activity: Activity){
         viewModelScope.launch{
             val id = repository.insertActivity(activity)
@@ -28,4 +31,5 @@ class ActivityViewModel @Inject constructor(
             repository.deleteActivity(activity)
         }
     }
+
 }

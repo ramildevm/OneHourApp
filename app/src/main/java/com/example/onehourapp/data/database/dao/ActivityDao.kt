@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityDao {
     @Query("SELECT * FROM Activity WHERE categoryId=:id")
     fun getActivitiesByCategoryId(id:Int): Flow<List<Activity>>
+    @Query("SELECT * FROM Activity")
+    fun getActivities(): Flow<List<Activity>>
+    @Query("SELECT * FROM Activity WHERE id=:id LIMIT 1")
+    fun getActivityById(id: Int): Activity
 
     @Insert
     suspend fun insertActivity(activity: Activity) :Long

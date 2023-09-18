@@ -23,6 +23,10 @@ class CategoryRepository @Inject constructor(
     fun getCategories(): Flow<List<Category>> {
         return categoryDao.getCategories()
     }
+
+    fun getCategoryById(categoryId: Int):Category{
+        return categoryDao.getCategoryById(categoryId)
+    }
     suspend fun insertCategory(category: Category) = categoryDao.insertCategory(category)
 
     suspend fun deleteCategory(category: Category): Boolean {

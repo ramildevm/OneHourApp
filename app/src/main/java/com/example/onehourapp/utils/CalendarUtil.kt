@@ -1,5 +1,6 @@
 package com.example.onehourapp.utils
 
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -14,20 +15,39 @@ object CalendarUtil {
 
         return calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
     }
-    fun getCurrentYear(): Int {
+    fun getDaysInMonthArray(year: Int): Array<Int> {
+        var arrayList:Array<Int> = Array(12){0}
+        val calendar = Calendar.getInstance()
+        for(i in 0 until 12) {
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, i)
+            calendar.set(Calendar.DAY_OF_MONTH, 1)
+            arrayList[i] = (if(i!=0) (arrayList[i-1] + 1) else 0) + calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        }
+        return arrayList
+    }
+    fun getCurrentYear(timestamp: Long = 0L): Int {
         val currentDate = Calendar.getInstance()
+        if(timestamp != 0L)
+            currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.YEAR)
     }
-    fun getCurrentMonth(): Int {
+    fun getCurrentMonth(timestamp: Long = 0L): Int {
         val currentDate = Calendar.getInstance()
+        if(timestamp != 0L)
+            currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.MONTH)
     }
-    fun getCurrentDay(): Int {
+    fun getCurrentDay(timestamp: Long = 0L): Int {
         val currentDate = Calendar.getInstance()
+        if(timestamp != 0L)
+            currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.DAY_OF_MONTH)
     }
-    fun getCurrentHour(): Int {
+    fun getCurrentHour(timestamp: Long = 0L): Int {
         val currentDate = Calendar.getInstance()
+        if(timestamp != 0L)
+            currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.HOUR_OF_DAY)
     }
     fun getYearStartMillis(year: Int): Long {

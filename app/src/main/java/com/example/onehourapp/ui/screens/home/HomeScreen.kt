@@ -2,9 +2,7 @@ package com.example.onehourapp.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.os.Build
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -41,7 +38,6 @@ import com.example.onehourapp.ui.theme.BottomBarColor
 import com.example.onehourapp.ui.theme.BottomBarLabelFontEn
 import com.example.onehourapp.ui.theme.BottomBarLabelFontRu
 import com.example.onehourapp.ui.theme.MainColorSecondRed
-import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.utils.CalendarUtil
 import java.util.Calendar
 
@@ -50,17 +46,19 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(navController: NavHostController = rememberNavController()) {
     var isAddBtnClicked by remember { mutableStateOf(false) }
+    var isChanged = remember { mutableStateOf(false) }
     Scaffold(
         bottomBar = { BottomBar(navController = navController) { isAddBtnClicked = true } }
     ) {innerPadding->
         if(isAddBtnClicked)
-            ComposeAlertDialogExample (
+            AddRecordDialog (
                 date = Calendar.getInstance().timeInMillis,
                 hour = CalendarUtil.getCurrentHour(),
-                onDismiss = {isAddBtnClicked = false}
+                onDismiss = {isAddBtnClicked = false},
+                notifyChange = {isChanged.value = true}
             )
         Box(modifier = Modifier.padding(innerPadding)){
-            HomeNavGraph(navController = navController)
+            HomeNavGraph(navController = navController, isChanged = isChanged)
         }
     }
 }

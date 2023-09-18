@@ -12,9 +12,12 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
     @Query("SELECT * FROM Category")
     fun getCategories(): Flow<List<Category>>
+    @Query("SELECT * FROM Category WHERE id=:id LIMIT 1")
+    fun getCategoryById(id: Int): Category
     @Insert
     suspend fun insertCategory(category: Category) : Long
     @Delete
     suspend fun deleteCategory(category: Category)
+
 
 }

@@ -42,6 +42,8 @@ class CategoryViewModel @Inject constructor(
             SortType.NAME -> repository.getCategories().map { list-> list.sortedBy { it.name } }
         }
 
+    fun getCategoryById(categoryId: Int) = repository.getCategoryById(categoryId)
+
     fun insertCategory(category: Category){
         viewModelScope.launch{
             val id = repository.insertCategory(category)
@@ -53,6 +55,8 @@ class CategoryViewModel @Inject constructor(
             repository.deleteCategory(category)
         }
     }
+
+
     sealed class SortType{
         object DEFAULT:SortType()
         object NAME:SortType()

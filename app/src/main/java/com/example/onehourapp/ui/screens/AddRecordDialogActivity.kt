@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.onehourapp.ui.screens.home.ComposeAlertDialogExample
+import com.example.onehourapp.ui.screens.home.AddRecordDialog
 import com.example.onehourapp.ui.theme.OneHourAppTheme
 import com.example.onehourapp.utils.CalendarUtil
 import java.util.Calendar
@@ -31,10 +31,11 @@ class AddRecordDialogActivity : ComponentActivity() {
             OneHourAppTheme {
                 var showDialog by remember { mutableStateOf(true) }
                 if (showDialog)
-                ComposeAlertDialogExample (
+                AddRecordDialog (
                     date = Calendar.getInstance().timeInMillis,
                    hour = hour!!,
-                   onDismiss = {showDialog = false}
+                   onDismiss = {showDialog = false},
+                    notifyChange = {}
                 )
                 else
                     finish()

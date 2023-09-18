@@ -12,8 +12,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.LineAxis
-import androidx.compose.material.icons.filled.ShapeLine
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.runtime.*
@@ -46,14 +44,11 @@ import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.utils.CalendarUtil
 import com.google.accompanist.pager.ExperimentalPagerApi
 import java.util.Calendar
+import java.util.Random
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class, ExperimentalComposeUiApi::class,)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MonthSelectorDialog(
-    date: Long,
-    hour: Int,
-    onDismiss: () -> Unit
-) {
+fun AddRecordDialog(date: Long = Calendar.getInstance().timeInMillis, hour:Int,onDismiss: () -> Unit, notifyChange: ()->Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -135,7 +130,10 @@ fun MonthSelectorDialog(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
+                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
+                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
+                                            Text("Populate")
+                                        }
 
                 val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
                 var expanded by remember { mutableStateOf(false) }
@@ -317,7 +315,7 @@ fun MonthSelectorDialog(
                                     if (pickerStartValue >= it)
                                         pickerStartValue = if (it != 0) it - 1 else 23
                                 },
-                                range = 0..(if (selectedDateMillis != date) 23 else hour),
+                                range = 0..(if (selectedDateMillis != date) 24 else hour),
                                 dividersColor = MainColorSecondRed,
                                 textStyle = TextStyle.Default.copy(fontSize = 16.sp)
                             )
@@ -326,8 +324,8 @@ fun MonthSelectorDialog(
                 }
                 else{
                     val start = if(hour==0)23f else (hour-1).toFloat()
-                    val end = if(hour==0)24f else hour.toFloat()
-                    var sliderPosition by remember { mutableStateOf(start..end) }
+                    val end = if(hour==0 || selectedDateMillis != date)24f else hour.toFloat()
+                    var sliderPosition by remember { mutableStateOf(start..(if (hour==0 || selectedDateMillis != date) hour+1f else end)) }
                     Box(Modifier.fillMaxWidth()) {
                         Text(stringResource(id = R.string.time))
                         Text(
@@ -395,12 +393,13 @@ fun MonthSelectorDialog(
                     if(isAddActivity){
                         activityViewModel.insertActivity(Activity(0, selectedActivityName,selectedCategoryId))
                         activityViewModel.insertResult.observe(lifecycleOwner) { activityId ->
-                            createActivityRecord(selectedDateMillis, pickerStartValue, pickerEndValue, activityRecordViewModel, activityId)
+                            createActivityRecord(hour,selectedDateMillis, pickerStartValue, pickerEndValue, activityRecordViewModel, activityId)
                         }
                     }
                     else{
-                        createActivityRecord(selectedDateMillis, pickerStartValue, pickerEndValue, activityRecordViewModel, selectedActivityId)
+                        createActivityRecord(hour, selectedDateMillis, pickerStartValue, pickerEndValue, activityRecordViewModel, selectedActivityId)
                     }
+                    notifyChange()
                     Toast.makeText(context, context.getText(R.string.successfull_records_add), Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }
@@ -417,7 +416,30 @@ fun MonthSelectorDialog(
         }
     )
 }
+fun createActivityRecord2(
+    activities: State<List<Activity>>,
+    activityRecordViewModel: ActivityRecordViewModel
+){
+    val startDate = Calendar.getInstance()
+    startDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023,0)
+    val endDate = Calendar.getInstance()
+    endDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023,8)
+    var timer = 0
+    var id = activities.value[kotlin.random.Random.nextInt(activities.value.size-1)]
+    for(timestamp in startDate.timeInMillis until endDate.timeInMillis step 60*60*1000){
+        if(timer < kotlin.random.Random.nextInt(7, 11)) {
+            if (kotlin.random.Random.nextInt(7) != 6)
+                activityRecordViewModel.insertActivityRecord(ActivityRecord(0, id.id, timestamp))
+        }
+        else {
+            id = activities.value[kotlin.random.Random.nextInt(activities.value.size-1)]
+            timer = 0
+        }
+        timer++
+    }
+}
 fun createActivityRecord(
+    hour:Int,
     selectedDateMillis: Long,
     pickerStartValue: Int,
     pickerEndValue: Int,
@@ -425,7 +447,7 @@ fun createActivityRecord(
     selectedActivityId: Int
 ) {
     val startDate = Calendar.getInstance()
-    startDate.timeInMillis = selectedDateMillis - if(pickerEndValue==0 || pickerEndValue==24) 86400000 else 0
+    startDate.timeInMillis = selectedDateMillis - if(pickerEndValue==0 || (pickerEndValue==24 && hour ==0)) 86400000 else 0
     startDate.set(Calendar.HOUR_OF_DAY, pickerStartValue)
     startDate.set(Calendar.MINUTE, 0)
     startDate.set(Calendar.SECOND, 0)
@@ -433,21 +455,12 @@ fun createActivityRecord(
 
     val endDate = Calendar.getInstance()
     endDate.timeInMillis = selectedDateMillis
-    endDate.set(Calendar.HOUR_OF_DAY, pickerEndValue)
+    endDate.set(Calendar.HOUR_OF_DAY, if(pickerEndValue==24) 0 else pickerEndValue)
     endDate.set(Calendar.MINUTE, 0)
     endDate.set(Calendar.SECOND, 0)
     endDate.set(Calendar.MILLISECOND, 0)
 
-    for(timestamp in startDate.timeInMillis until endDate.timeInMillis step 60*60*1000){
+    for(timestamp in startDate.timeInMillis until endDate.timeInMillis + (if(hour!=0 && pickerEndValue==24)60*60*1000*24L else 0L) step 60*60*1000){
         activityRecordViewModel.insertActivityRecord(ActivityRecord(0, selectedActivityId, timestamp))
     }
-}
-
-@Composable
-fun ComposeAlertDialogExample(date: Long = Calendar.getInstance().timeInMillis, hour:Int,onDismiss: () -> Unit) {
-    MonthSelectorDialog(
-        date,
-        hour,
-        onDismiss = onDismiss
-    )
 }

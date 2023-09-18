@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -24,7 +25,7 @@ import com.example.onehourapp.ui.screens.home.calendar.CalendarScreenContent
 import com.example.onehourapp.ui.theme.BackgroundColor
 
 @Composable
-fun HomeNavGraph(navController: NavHostController) {
+fun HomeNavGraph(navController: NavHostController, isChanged: MutableState<Boolean>) {
     NavHost(
         navController = navController,
         route = Graph.HOME,
@@ -35,7 +36,7 @@ fun HomeNavGraph(navController: NavHostController) {
             YearStatScreenContent(navController)
         }
         composable(route = BottomBarScreen.Calendar.route) {
-            CalendarScreenContent(navController)
+            CalendarScreenContent(navController, isChanged)
         }
         composable(route = BottomBarScreen.Activity.route) {
             ActivityScreenContent(navController)
