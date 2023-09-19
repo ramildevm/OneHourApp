@@ -130,10 +130,12 @@ fun AddRecordDialog(date: Long = Calendar.getInstance().timeInMillis, hour:Int,o
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
-                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
-                                            Text("Populate")
-                                        }
+                //Todo: прогрузка последней выбранной активности и даты создать сущность бд для этого
+
+//                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
+//                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
+//                                            Text("Populate")
+//                                        }
 
                 val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
                 var expanded by remember { mutableStateOf(false) }

@@ -26,6 +26,7 @@ class ActivityRecordViewModel @Inject constructor(
 
     }
     fun getActivityRecordsByMonth(year:Int, month:Int) = repository.getActivityRecordsByMonth(year,month)
+    fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByCategoryInMonth(categoryId,year,month)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 
     fun insertActivityRecord(activityRecord: ActivityRecord){

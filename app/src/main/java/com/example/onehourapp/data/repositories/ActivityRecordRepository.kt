@@ -30,6 +30,11 @@ class ActivityRecordRepository @Inject constructor(
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
         return activityRecordDao.getActivityRecordsByInterval(startOfMonth,endOfMonth)
     }
+    fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year: Int, month: Int): Int {
+        val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
+        val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
+        return activityRecordDao.getActivityRecordsCountByCategoryId(categoryId, startOfMonth,endOfMonth)
+    }
     fun getActivityRecordByTime(year: Int, month: Int, day:Int, hour:Int): ActivityRecord? {
         val time = Calendar.getInstance()
         time.set(year,month,day,hour,0,0)

@@ -23,7 +23,11 @@ interface ActivityRecordDao {
 
     @Query("SELECT * FROM ActivityRecord WHERE timestamp=:timestamp")
     fun getActivityRecordByTimeStamp(timestamp: Long) : ActivityRecord?
-
+    @Query("SELECT COUNT(*) FROM ActivityRecord ar " +
+            "INNER JOIN Activity a ON ar.activityId = a.id " +
+            "WHERE a.categoryId = :categoryId " +
+            "AND ar.timestamp BETWEEN :startTimestamp AND :endTimeStamp")
+    fun getActivityRecordsCountByCategoryId(categoryId: Int, startTimestamp: Long, endTimeStamp: Long): Int
     @Upsert
     suspend fun insertActivityRecord(activityRecord: ActivityRecord)
 

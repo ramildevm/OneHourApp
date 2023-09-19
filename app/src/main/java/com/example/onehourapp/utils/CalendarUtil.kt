@@ -6,7 +6,7 @@ import java.util.Calendar
 import java.util.Locale
 
 object CalendarUtil {
-    fun getDaysInMonth(month: Int, year: Int): Int {
+    fun getDaysInMonth(month: Int, year: Int = getCurrentYear()): Int {
         val calendar = Calendar.getInstance()
 
         calendar.set(Calendar.YEAR, year)
