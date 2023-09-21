@@ -51,4 +51,8 @@
     <string name="switch_to">Switch to</string>
     <string name="slider">the slider</string>
     <string name="scrolling">scrolling</string>
+    <string name="information">Information</string>
+    <string name="hour_short">h.</string>
+    <string name="hours">Hours:</string>
+    <string name="days">Days:</string>
 </resources>

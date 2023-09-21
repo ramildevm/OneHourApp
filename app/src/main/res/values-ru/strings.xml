@@ -52,4 +52,8 @@
     <string name="switch_to">Переключиться на</string>
     <string name="slider">ползунок</string>
     <string name="scrolling">прокрутку</string>
+    <string name="information">Информация</string>
+    <string name="hour_short">ч.</string>
+    <string name="hours">Часы:</string>
+    <string name="days">Дни:</string>
 </resources>

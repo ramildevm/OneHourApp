@@ -46,7 +46,7 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(navController: NavHostController = rememberNavController()) {
     var isAddBtnClicked by remember { mutableStateOf(false) }
-    var isChanged = remember { mutableStateOf(false) }
+    var isChanged = remember { mutableStateOf(-1) }
     Scaffold(
         bottomBar = { BottomBar(navController = navController) { isAddBtnClicked = true } }
     ) {innerPadding->
@@ -55,7 +55,7 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
                 date = Calendar.getInstance().timeInMillis,
                 hour = CalendarUtil.getCurrentHour(),
                 onDismiss = {isAddBtnClicked = false},
-                notifyChange = {isChanged.value = true}
+                notifyChange = {month:Int -> isChanged.value = month}
             )
         Box(modifier = Modifier.padding(innerPadding)){
             HomeNavGraph(navController = navController, isChanged = isChanged)

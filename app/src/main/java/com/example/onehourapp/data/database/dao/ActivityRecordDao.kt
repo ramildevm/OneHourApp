@@ -18,8 +18,8 @@ interface ActivityRecordDao {
 
     @Query("SELECT * FROM ActivityRecord WHERE activityId = :id")
     fun getActivityRecordsByActivityId(id:Int): Flow<List<ActivityRecord>>
-    @Query("SELECT COUNT(*) FROM ActivityRecord WHERE activityId = :id")
-    fun getActivityRecordsCountByActivityId(id:Int): Int
+    @Query("SELECT COUNT(*) FROM ActivityRecord WHERE activityId = :id and timestamp between :startTimestamp and :endTimeStamp")
+    fun getActivityRecordsCountByActivityId(id:Int, startTimestamp: Long, endTimeStamp: Long): Int
 
     @Query("SELECT * FROM ActivityRecord WHERE timestamp=:timestamp")
     fun getActivityRecordByTimeStamp(timestamp: Long) : ActivityRecord?

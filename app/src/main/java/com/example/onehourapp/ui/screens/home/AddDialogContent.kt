@@ -48,7 +48,7 @@ import java.util.Random
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun AddRecordDialog(date: Long = Calendar.getInstance().timeInMillis, hour:Int,onDismiss: () -> Unit, notifyChange: ()->Unit) {
+fun AddRecordDialog(date: Long = Calendar.getInstance().timeInMillis, hour:Int,onDismiss: () -> Unit, notifyChange: (month:Int)->Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -401,7 +401,7 @@ fun AddRecordDialog(date: Long = Calendar.getInstance().timeInMillis, hour:Int,o
                     else{
                         createActivityRecord(hour, selectedDateMillis, pickerStartValue, pickerEndValue, activityRecordViewModel, selectedActivityId)
                     }
-                    notifyChange()
+                    notifyChange(CalendarUtil.getCurrentMonth(selectedDateMillis))
                     Toast.makeText(context, context.getText(R.string.successfull_records_add), Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }

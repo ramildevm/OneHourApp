@@ -15,7 +15,12 @@ class ActivityRecordRepository @Inject constructor(
     @Named("activityRecord") private val activityRecordDao: ActivityRecordDao
 ){
     fun getActivityRecordsCountByActivity(activityId:Int) :Int{
-        return activityRecordDao.getActivityRecordsCountByActivityId(activityId)
+        return activityRecordDao.getActivityRecordsCountByActivityId(activityId, 0L, Long.MAX_VALUE)
+    }
+    fun getActivityRecordsCountByActivityInMonth(activityId:Int, year: Int, month: Int) :Int{
+        val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
+        val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
+        return activityRecordDao.getActivityRecordsCountByActivityId(activityId, startOfMonth, endOfMonth)
     }
     fun getActivityRecordsByInterval(startTimestamp:Long, endTimeStamp:Long) :Flow<List<ActivityRecord>>{
         return activityRecordDao.getActivityRecordsByInterval(startTimestamp,endTimeStamp)
@@ -34,6 +39,11 @@ class ActivityRecordRepository @Inject constructor(
         val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
         return activityRecordDao.getActivityRecordsCountByCategoryId(categoryId, startOfMonth,endOfMonth)
+    }
+    fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year: Int, month: Int, day: Int): Int {
+        val startOfDay = CalendarUtil.getDayStartMillis(year, month, day)
+        val endOfDay = startOfDay + 82800000L
+        return activityRecordDao.getActivityRecordsCountByCategoryId(categoryId, startOfDay, endOfDay)
     }
     fun getActivityRecordByTime(year: Int, month: Int, day:Int, hour:Int): ActivityRecord? {
         val time = Calendar.getInstance()

@@ -91,6 +91,8 @@ import com.example.onehourapp.ui.theme.ActivityListItemFont
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.CardActivityColor
 import com.example.onehourapp.ui.theme.CardCategoryColor
+import com.example.onehourapp.ui.theme.CategoryListItemFont
+import com.example.onehourapp.ui.theme.CategoryListItemFont2
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.SortItemColor
 import com.example.onehourapp.ui.theme.TextFieldStyle
@@ -251,7 +253,7 @@ fun ActivitiesList() {
                                 .padding(5.dp)){
                             Text(text = stringResource(R.string.add),
                                 textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.ExtraBold)
+                                style = CategoryListItemFont.copy(fontWeight = FontWeight.ExtraBold)
                             )
                         }
                     }
@@ -261,7 +263,7 @@ fun ActivitiesList() {
     }
 }
 
-
+//Todo: updating https://www.youtube.com/watch?v=QCSJfMqQY9A
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CategoryCardContent(
@@ -296,7 +298,7 @@ fun CategoryCardContent(
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .weight(1f),
-                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
+                style = CategoryListItemFont
             )
             IconButton(modifier= Modifier.align(Alignment.CenterVertically),onClick = { onDelete() }) {
                 Icon(imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
@@ -426,7 +428,7 @@ fun CategoryCardContent(
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .weight(1f),
-                                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.ExtraBold)
+                                style = CategoryListItemFont.copy(fontWeight = FontWeight.ExtraBold)
                             )
                         }
                     }
@@ -462,7 +464,7 @@ fun AddCategoryDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Color) -> Unit,
     categories:List<Category>
-) { //Todo: updating https://www.youtube.com/watch?v=QCSJfMqQY9A
+) {
     Dialog(onDismissRequest = onDismiss ) {
         Card(
             modifier = Modifier

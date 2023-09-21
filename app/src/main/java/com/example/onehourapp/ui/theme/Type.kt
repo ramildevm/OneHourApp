@@ -7,6 +7,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.onehourapp.data.models.Category
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -69,10 +70,32 @@ fontWeight = FontWeight.Normal,
     color = MainColorSecondRed,
     textAlign = TextAlign.Center
 )
+val CategoryListItemFont = TextStyle(
+    fontWeight = FontWeight.Bold,
+    fontSize = 20.sp,
+    letterSpacing = 0.15.sp
+)
+val CategoryListItemFont2 = TextStyle(
+    color = Color.White,
+    fontWeight = FontWeight.Bold,
+    fontSize = 17.sp,
+    letterSpacing = 0.15.sp,
+)
+val CategoryListItemFont2Inner = TextStyle(
+    color = Color.White,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    letterSpacing = 0.15.sp,
+)
 val ActivityListItemFont = TextStyle(
     color = Color.White,
     fontWeight = FontWeight.Medium,
     fontSize = 17.sp,
     letterSpacing = 0.15.sp,
-
+)
+val ActivityListItemFont2 = TextStyle(
+    color = Color.White,
+    fontWeight = FontWeight.Medium,
+    fontSize = 15.sp,
+    letterSpacing = 0.15.sp,
 )

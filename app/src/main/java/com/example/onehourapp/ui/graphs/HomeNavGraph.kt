@@ -25,11 +25,11 @@ import com.example.onehourapp.ui.screens.home.calendar.CalendarScreenContent
 import com.example.onehourapp.ui.theme.BackgroundColor
 
 @Composable
-fun HomeNavGraph(navController: NavHostController, isChanged: MutableState<Boolean>) {
+fun HomeNavGraph(navController: NavHostController, isChanged: MutableState<Int>) {
     NavHost(
         navController = navController,
         route = Graph.HOME,
-        startDestination = BottomBarScreen.Activity.route
+        startDestination = BottomBarScreen.Calendar.route
     ) {
 
         composable(route = BottomBarScreen.YearStat.route) {

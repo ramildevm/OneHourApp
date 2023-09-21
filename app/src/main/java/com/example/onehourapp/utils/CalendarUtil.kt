@@ -63,6 +63,12 @@ object CalendarUtil {
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
     }
+    fun getDayStartMillis(year: Int, month: Int, day:Int): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day, 0, 0, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
     fun getDateTimestamp(year: Int, month: Int, dayOfMonth: Int): Long {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)

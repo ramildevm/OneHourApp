@@ -19,14 +19,16 @@ import javax.inject.Inject
 class ActivityRecordViewModel @Inject constructor(
     private val repository: ActivityRecordRepository
 ): ViewModel() {
-    fun getActivityRecordsInInterval(startTime:Long, endTime:Long) = repository.getActivityRecordsByInterval(startTime,endTime)
     fun getActivityRecordsByYear(year:Int) = repository.getActivityRecordsByYear(year)
     fun getActivityRecordsCountByActivityId(activityId:Int) : Int {
          return repository.getActivityRecordsCountByActivity(activityId)
-
+    }
+    fun getActivityRecordsCountByActivityInMonth(activityId:Int, year:Int, month:Int) : Int {
+         return repository.getActivityRecordsCountByActivityInMonth(activityId, year, month)
     }
     fun getActivityRecordsByMonth(year:Int, month:Int) = repository.getActivityRecordsByMonth(year,month)
     fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByCategoryInMonth(categoryId,year,month)
+    fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year:Int, month:Int, day:Int) = repository.getActivityRecordsCountByCategoryInDay(categoryId,year,month, day)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 
     fun insertActivityRecord(activityRecord: ActivityRecord){
