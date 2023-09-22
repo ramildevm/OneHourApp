@@ -8,10 +8,12 @@ import com.example.onehourapp.R
 import com.example.onehourapp.data.database.dao.ActivityDao
 import com.example.onehourapp.data.database.dao.ActivityRecordDao
 import com.example.onehourapp.data.database.dao.CategoryDao
+import com.example.onehourapp.data.database.dao.UserSettingsDao
 import com.example.onehourapp.data.di.ApplicationScope
 import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
+import com.example.onehourapp.data.models.UserSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -19,13 +21,14 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 @Database(
-    version = 1,
-    entities = [Category::class, Activity::class, ActivityRecord::class]
+    version = 2,
+    entities = [Category::class, Activity::class, ActivityRecord::class, UserSettings::class]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val categoryDao: CategoryDao
     abstract val activityDao: ActivityDao
     abstract val activityRecordDao: ActivityRecordDao
+    abstract val userSettingsDao: UserSettingsDao
 
     class Callback @Inject constructor(
         private val database: Provider<AppDatabase>,
@@ -37,6 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
             super.onCreate(db)
             val categoryDao = database.get().categoryDao
             val activityDao = database.get().activityDao
+            val settingsDao = database.get().userSettingsDao
 
             applicationScope.launch {
                 categoryDao.insertCategory(Category(1,  applicationContext.getString(R.string.sleep),"#092F79"))
@@ -58,6 +62,8 @@ abstract class AppDatabase : RoomDatabase() {
                 activityDao.insertActivity(Activity(7,  applicationContext.getString(R.string.exercise), 7))
                 activityDao.insertActivity(Activity(8,  applicationContext.getString(R.string.production), 8))
                 activityDao.insertActivity(Activity(9,  applicationContext.getString(R.string.work), 9))
+
+                settingsDao.insertUpdateUserSettings(UserSettings(0,1,0L,0,8))
             }
         }
     }

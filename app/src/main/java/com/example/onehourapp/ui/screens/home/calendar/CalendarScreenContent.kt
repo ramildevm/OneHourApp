@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -31,7 +30,6 @@ import androidx.compose.material.BackdropScaffold
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
@@ -42,7 +40,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
@@ -72,7 +69,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.drawText
@@ -309,14 +305,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             activityViewModel,
                             categoryViewModel
                         )
-                        loadedCategoriesCount[changedMonth.value] = categoryViewModel.getCategories().first().toList().map {category->
-                            val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
-                                category.id,
-                                year,
-                                changedMonth.value,
-                            )
-                            RecordCountCategory(category, count)
-                        }.filter { it.count>0 }
+                        updateLoadedCategoriesCountList(loadedCategoriesCount,year, changedMonth.value,activityRecordViewModel,categoryViewModel)
                         changedMonth.value = -1
                     }
 
@@ -417,207 +406,207 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                 val loadedCategories = loadedCategoriesCount[pagerState.currentPage%12]
                 LazyColumn(Modifier.padding(top = 30.dp)) {
                     if(loadedCategories != null) {
-                    item {
-                        Box(Modifier.wrapContentSize()) {
-                            val totalHours =
-                                24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
-                            val pieChartData = PieChartData(
-                                entries = loadedCategories.mapIndexed { _, value ->
-                                    PieChartEntry(
-                                        value = value.count.toFloat(),
-                                        label = AnnotatedString(
-                                            value.category.name + String.format(
-                                                " - %.1f",
-                                                (value.count / totalHours * 100f)
-                                            ) + "%"
-                                        ),
-                                        color = Color(value.category.color.toColorInt())
-                                    )
-                                }.plus(
-                                    PieChartEntry(
-                                        value = totalHours - loadedCategories.sumOf { it.count },
-                                        label = AnnotatedString(
-                                            "N/A"
-                                        ),
-                                        color = Color.Gray
-                                    )
-                                ).filter { it.value > 0f },
-                                colors = loadedCategories
-                                    .map { value -> Color(value.category.color.toColorInt()) }
-                                    .plus(Color.Gray),
-                                legendPosition = LegendPosition.End,
-                                legendShape = CircleShape,
-                            )
-
-                            PieChart(
-                                data = pieChartData,
-                                chartSize = 140.dp,
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(32.dp)
-                            )
-                        }
-                    }
-                    item{
-                        Column(verticalArrangement = Arrangement.Center) {
-                            val listFirstCategory = if (loadedCategories.isNotEmpty()) loadedCategories.first().category else null
-
-                            if(listFirstCategory!=null) {
-                                var selectedCategory: Category by remember {
-                                    mutableStateOf(listFirstCategory)
-                                }
-                                var categoryListExpanded by remember {
-                                    mutableStateOf(false)
-                                }
-                                ExposedDropdownMenuBox(
-                                    expanded = categoryListExpanded,
-                                    onExpandedChange = {
-                                        categoryListExpanded = !categoryListExpanded
-                                    },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 10.dp).fillMaxWidth(),
-                                ) {
-                                    TextField(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        value = selectedCategory.name,
-                                        onValueChange = {},
-                                        readOnly = true,
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Default.Circle,
-                                                tint = Color(selectedCategory.color.toColorInt()),
-                                                contentDescription = null
-                                            )
-                                        },
-                                        trailingIcon = {
-                                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                                expanded = categoryListExpanded
-                                            )
-                                        },
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = categoryListExpanded,
-                                        onDismissRequest = { categoryListExpanded = false }
-                                    ) {
-                                        loadedCategories.map { it.category }
-                                            .forEach { category ->
-                                                DropdownMenuItem(
-                                                    content = {
-                                                        Row {
-                                                            Text(
-                                                                "● ",
-                                                                fontSize = 20.sp,
-                                                                color = Color(category.color.toColorInt())
-                                                            )
-                                                            Text(text = category.name)
-                                                        }
-                                                    },
-                                                    onClick = {
-                                                        selectedCategory = category
-                                                        categoryListExpanded = false
-                                                    }
-                                                )
-                                            }
-                                    }
-                                }
-
-                                val barDataList: ArrayList<BarData> =
-                                    getBarDataListByCategoryInMonth(
-                                        activityRecordViewModel,
-                                        selectedCategory,
-                                        year,
-                                        pagerState.currentPage % 12
-                                    )
-                                val ySteps = 25
-                                val xSteps = CalendarUtil.getDaysInMonth(
-                                    pagerState.currentPage % 12,
-                                    year
-                                ) + 2
-                                val hourString = stringResource(id = R.string.hours)
-                                val daysString = stringResource(id = R.string.days)
-
-                                val yAxisData = AxisData.Builder()
-                                    .backgroundColor(BackgroundSecondColor)
-                                    .axisLabelColor(Color.White)
-                                    .startPadding(20.dp)
-                                    .axisLineColor(Color.White)
-                                    .steps(ySteps)
-                                    .axisOffset(20.dp)
-                                    .axisLabelFontSize(10.sp)
-                                    .labelData { index ->
-                                        if(index>24)
-                                            hourString
-                                        else
-                                            String.format(
-                                                "%4d",
-                                                index
-                                            ) //+ hourShortString
-                                    }
-                                    .build()
-
-                                val xAxisData = AxisData.Builder()
-                                    .backgroundColor(BackgroundSecondColor)
-                                    .axisLabelColor(Color.White)
-                                    .axisLineColor(Color.White)
-                                    .steps(xSteps)
-                                    .bottomPadding(20.dp)
-                                    .labelData { index ->
-                                        if (index != 0 && index != xSteps - 1)
-                                            index.toString()
-                                        else
-                                            "" }
-                                    .build()
-
-
-                                val barChartData = BarChartData(
-                                    backgroundColor = BackgroundSecondColor,
-                                    chartData = barDataList,
-                                    xAxisData = xAxisData,
-                                    yAxisData = yAxisData,
-                                    barStyle = BarStyle(20.dp, paddingBetweenBars = 3.dp),
+                        item {
+                            Box(Modifier.wrapContentSize()) {
+                                val totalHours =
+                                    24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
+                                val pieChartData = PieChartData(
+                                    entries = loadedCategories.mapIndexed { _, value ->
+                                        PieChartEntry(
+                                            value = value.count.toFloat(),
+                                            label = AnnotatedString(
+                                                value.category.name + String.format(
+                                                    " - %.1f",
+                                                    (value.count / totalHours * 100f)
+                                                ) + "%"
+                                            ),
+                                            color = Color(value.category.color.toColorInt())
+                                        )
+                                    }.plus(
+                                        PieChartEntry(
+                                            value = totalHours - loadedCategories.sumOf { it.count },
+                                            label = AnnotatedString(
+                                                "N/A"
+                                            ),
+                                            color = Color.Gray
+                                        )
+                                    ).filter { it.value > 0f },
+                                    colors = loadedCategories
+                                        .map { value -> Color(value.category.color.toColorInt()) }
+                                        .plus(Color.Gray),
+                                    legendPosition = LegendPosition.End,
+                                    legendShape = CircleShape,
                                 )
-                                Box(Modifier
-                                    .height(300.dp)
-                                    .background(BackgroundSecondColor)) {
-                                    BarChart(
-                                        modifier = Modifier
-                                            .background(BackgroundSecondColor)
-                                            .fillMaxWidth()
-                                            .height(300.dp),
-                                        barChartData = barChartData
+
+                                PieChart(
+                                    data = pieChartData,
+                                    chartSize = 140.dp,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .padding(32.dp)
+                                )
+                            }
+                        }
+                        item{
+                            Column(verticalArrangement = Arrangement.Center) {
+                                val listFirstCategory = if (loadedCategories.isNotEmpty()) loadedCategories.first().category else null
+
+                                if(listFirstCategory!=null) {
+                                    var selectedCategory: Category by remember {
+                                        mutableStateOf(listFirstCategory)
+                                    }
+                                    var categoryListExpanded by remember {
+                                        mutableStateOf(false)
+                                    }
+                                    ExposedDropdownMenuBox(
+                                        expanded = categoryListExpanded,
+                                        onExpandedChange = {
+                                            categoryListExpanded = !categoryListExpanded
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 10.dp).fillMaxWidth(),
+                                    ) {
+                                        TextField(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            value = selectedCategory.name,
+                                            onValueChange = {},
+                                            readOnly = true,
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Circle,
+                                                    tint = Color(selectedCategory.color.toColorInt()),
+                                                    contentDescription = null
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                                    expanded = categoryListExpanded
+                                                )
+                                            },
+                                        )
+                                        ExposedDropdownMenu(
+                                            expanded = categoryListExpanded,
+                                            onDismissRequest = { categoryListExpanded = false }
+                                        ) {
+                                            loadedCategories.map { it.category }
+                                                .forEach { category ->
+                                                    DropdownMenuItem(
+                                                        content = {
+                                                            Row {
+                                                                Text(
+                                                                    "● ",
+                                                                    fontSize = 20.sp,
+                                                                    color = Color(category.color.toColorInt())
+                                                                )
+                                                                Text(text = category.name)
+                                                            }
+                                                        },
+                                                        onClick = {
+                                                            selectedCategory = category
+                                                            categoryListExpanded = false
+                                                        }
+                                                    )
+                                                }
+                                        }
+                                    }
+
+                                    val barDataList: ArrayList<BarData> =
+                                        getBarDataListByCategoryInMonth(
+                                            activityRecordViewModel,
+                                            selectedCategory,
+                                            year,
+                                            pagerState.currentPage % 12
+                                        )
+                                    val ySteps = 25
+                                    val xSteps = CalendarUtil.getDaysInMonth(
+                                        pagerState.currentPage % 12,
+                                        year
+                                    ) + 2
+                                    val hourString = stringResource(id = R.string.hours)
+                                    val daysString = stringResource(id = R.string.days)
+
+                                    val yAxisData = AxisData.Builder()
+                                        .backgroundColor(BackgroundSecondColor)
+                                        .axisLabelColor(Color.White)
+                                        .startPadding(20.dp)
+                                        .axisLineColor(Color.White)
+                                        .steps(ySteps)
+                                        .axisOffset(20.dp)
+                                        .axisLabelFontSize(10.sp)
+                                        .labelData { index ->
+                                            if(index>24)
+                                                hourString
+                                            else
+                                                String.format(
+                                                    "%4d",
+                                                    index
+                                                ) //+ hourShortString
+                                        }
+                                        .build()
+
+                                    val xAxisData = AxisData.Builder()
+                                        .backgroundColor(BackgroundSecondColor)
+                                        .axisLabelColor(Color.White)
+                                        .axisLineColor(Color.White)
+                                        .steps(xSteps)
+                                        .bottomPadding(20.dp)
+                                        .labelData { index ->
+                                            if (index != 0 && index != xSteps - 1)
+                                                index.toString()
+                                            else
+                                                "" }
+                                        .build()
+
+
+                                    val barChartData = BarChartData(
+                                        backgroundColor = BackgroundSecondColor,
+                                        chartData = barDataList,
+                                        xAxisData = xAxisData,
+                                        yAxisData = yAxisData,
+                                        barStyle = BarStyle(20.dp, paddingBetweenBars = 3.dp),
                                     )
-                                    Box(Modifier.fillMaxSize().background(brush = Brush.horizontalGradient(
-                                            0f to Color.Transparent,
-                                            0.9f to Color.Transparent,
-                                            0.93f to  BackgroundSecondColor,
-                                            1f to  BackgroundSecondColor
-                                    )))
-                                    Text(daysString, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp).align(Alignment.BottomStart))
+                                    Box(Modifier
+                                        .height(300.dp)
+                                        .background(BackgroundSecondColor)) {
+                                        BarChart(
+                                            modifier = Modifier
+                                                .background(BackgroundSecondColor)
+                                                .fillMaxWidth()
+                                                .height(300.dp),
+                                            barChartData = barChartData
+                                        )
+                                        Box(Modifier.fillMaxSize().background(brush = Brush.horizontalGradient(
+                                                0f to Color.Transparent,
+                                                0.9f to Color.Transparent,
+                                                0.93f to  BackgroundSecondColor,
+                                                1f to  BackgroundSecondColor
+                                        )))
+                                        Text(daysString, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp).align(Alignment.BottomStart))
+                                    }
                                 }
                             }
                         }
-                    }
-                    itemsIndexed(loadedCategories.filter { it.count > 0 }) { _, category ->
-                        var expanded by remember {
-                            mutableStateOf(false)
-                        }
-                        Card(
-                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                            backgroundColor = CardCategoryColorSecond,
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            CategoryCardContent(
-                                category,
-                                year,
-                                pagerState.currentPage % 12,
-                                activityViewModel,
-                                activityRecordViewModel,
-                                expanded
-                            ) { expanded = !expanded }
-                        }
+                        itemsIndexed(loadedCategories.filter { it.count > 0 }) { _, category ->
+                            var expanded by remember {
+                                mutableStateOf(false)
+                            }
+                            Card(
+                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                backgroundColor = CardCategoryColorSecond,
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                CategoryCardContent(
+                                    category,
+                                    year,
+                                    pagerState.currentPage % 12,
+                                    activityViewModel,
+                                    activityRecordViewModel,
+                                    expanded
+                                ) { expanded = !expanded }
+                            }
 
+                        }
                     }
                 }
-            }
                 Text(
                     text = stringResource(id = R.string.information),
                     modifier = Modifier
@@ -773,7 +762,6 @@ fun getBarDataListByCategoryInMonth(
     if(category!=null)
     for(index in 1 .. maxX) {
         val count = activityRecordViewModel.getActivityRecordsCountByCategoryInDay(category.id,year, month, index)
-        Log.e("Point", "category: ${category.name} day: $index count: $count")
         val point = Point(
             x = index.toFloat(),
             y = count.toFloat()
@@ -789,8 +777,22 @@ fun getBarDataListByCategoryInMonth(
     list.add(BarData(Point(maxX+1f,0f)))
     return list
 }
-
-
+suspend fun updateLoadedCategoriesCountList(
+    loadedCategoriesCount: SnapshotStateMap<Int, List<RecordCountCategory>>,
+    year: Int,
+    month: Int,
+    activityRecordViewModel: ActivityRecordViewModel,
+    categoryViewModel: CategoryViewModel
+) {
+    loadedCategoriesCount[month] = categoryViewModel.getCategories().first().toList().map {category->
+        val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
+            category.id,
+            year,
+            month,
+        )
+        RecordCountCategory(category, count)
+    }.filter { it.count > 0 }
+}
 suspend fun updateLoadedData(
     loadedData: SnapshotStateMap<Int, List<ActivityRecordView>>,
     pageIndex: Int,
@@ -805,7 +807,7 @@ suspend fun updateLoadedData(
         val day = CalendarUtil.getCurrentDay(record.timestamp)
         val hour = CalendarUtil.getCurrentHour(record.timestamp)
         val category = categoryViewModel.getCategoryById(
-            activityViewModel.getActivityById(record.activityId).categoryId
+            activityViewModel.getActivityById(record.activityId)!!.categoryId
         )
         ActivityRecordView(day, hour, Color(category.color.toColorInt()))
     }

@@ -19,7 +19,7 @@ class ActivityRepository @Inject constructor(
     fun getActivities(): Flow<List<Activity>> {
         return activityDao.getActivities()
     }
-    fun getActivityById(activityId: Int): Activity {
+    fun getActivityById(activityId: Int): Activity? {
         return activityDao.getActivityById(activityId)
     }
     suspend fun insertActivity(activity: Activity) : Long {

@@ -54,6 +54,7 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
             AddRecordDialog (
                 date = Calendar.getInstance().timeInMillis,
                 hour = CalendarUtil.getCurrentHour(),
+                AddCallerType.HOME_SCREEN,
                 onDismiss = {isAddBtnClicked = false},
                 notifyChange = {month:Int -> isChanged.value = month}
             )

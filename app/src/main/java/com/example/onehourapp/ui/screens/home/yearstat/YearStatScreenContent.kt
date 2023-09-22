@@ -126,7 +126,7 @@ fun ZoomableCanvas(density: Float, year: Int) {
         val month = CalendarUtil.getCurrentMonth(record.timestamp)
         val day = CalendarUtil.getCurrentDay(record.timestamp)
         val hour = CalendarUtil.getCurrentHour(record.timestamp)
-        val category = categoryViewModel.getCategoryById(activityViewModel.getActivityById(record.activityId).categoryId)
+        val category = categoryViewModel.getCategoryById(activityViewModel.getActivityById(record.activityId)!!.categoryId)
         records[month][day-1][hour] = category.color
     }
 

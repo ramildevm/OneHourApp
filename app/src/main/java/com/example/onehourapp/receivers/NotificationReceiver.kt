@@ -28,7 +28,7 @@ class NotificationReceiver : BroadcastReceiver() {
             context,
             hour,
             notificationIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE
         )
         Log.d("NotificationReceiver", "Current notified: $hour")
         val repeatedNotification: Notification = buildLocalNotification(context, pendingIntent)!!.build()

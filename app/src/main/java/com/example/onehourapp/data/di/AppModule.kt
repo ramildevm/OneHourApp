@@ -43,6 +43,10 @@ object AppModule {
     @Provides
     @Named("activityRecord")
     fun provideActivityRecordDao(db: AppDatabase) = db.activityRecordDao
+    @Singleton
+    @Provides
+    @Named("userSettings")
+    fun provideUserSettingsDao(db: AppDatabase) = db.userSettingsDao
 
     @ApplicationScope
     @Provides

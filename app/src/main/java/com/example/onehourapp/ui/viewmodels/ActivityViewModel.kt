@@ -18,7 +18,7 @@ class ActivityViewModel @Inject constructor(
     fun getActivities(id:Int) = repository.getActivitiesByCategoryId(id)
     fun getActivities() = repository.getActivities()
 
-    fun getActivityById(activityId: Int): Activity = repository.getActivityById(activityId)
+    fun getActivityById(activityId: Int): Activity? = repository.getActivityById(activityId)
 
     fun insertActivity(activity: Activity){
         viewModelScope.launch{
