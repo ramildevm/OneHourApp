@@ -44,6 +44,15 @@ object CalendarUtil {
             currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.DAY_OF_MONTH)
     }
+
+    fun getCurrentDayMillis(): Long {
+        val currentDate = Calendar.getInstance()
+        currentDate.set(Calendar.HOUR_OF_DAY, 0)
+        currentDate.set(Calendar.MINUTE, 0)
+        currentDate.set(Calendar.SECOND, 0)
+        currentDate.set(Calendar.MILLISECOND, 0)
+        return currentDate.timeInMillis
+    }
     fun getCurrentHour(timestamp: Long = 0L): Int {
         val currentDate = Calendar.getInstance()
         if(timestamp != 0L)

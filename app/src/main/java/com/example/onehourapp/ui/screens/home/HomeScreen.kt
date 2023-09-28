@@ -52,7 +52,7 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
     ) {innerPadding->
         if(isAddBtnClicked)
             AddRecordDialog (
-                date = Calendar.getInstance().timeInMillis,
+                date = CalendarUtil.getCurrentDayMillis(),
                 hour = CalendarUtil.getCurrentHour(),
                 AddCallerType.HOME_SCREEN,
                 onDismiss = {isAddBtnClicked = false},

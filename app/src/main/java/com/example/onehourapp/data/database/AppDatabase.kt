@@ -22,7 +22,8 @@ import javax.inject.Provider
 
 @Database(
     version = 2,
-    entities = [Category::class, Activity::class, ActivityRecord::class, UserSettings::class]
+    entities = [Category::class, Activity::class, ActivityRecord::class, UserSettings::class],
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val categoryDao: CategoryDao

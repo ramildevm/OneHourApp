@@ -15,6 +15,18 @@
     <string name="october">Октябрь</string>
     <string name="november">Ноябрь</string>
     <string name="december">Декабрь</string>
+    <string name="january_date_format">%d января</string>
+    <string name="february_date_format">%d февраля</string>
+    <string name="march_date_format">%d марта</string>
+    <string name="april_date_format">%d апреля</string>
+    <string name="may_date_format">%d мая</string>
+    <string name="june_date_format">%d июня</string>
+    <string name="july_date_format">%d июля</string>
+    <string name="august_date_format">%d августа</string>
+    <string name="september_date_format">%d сентября</string>
+    <string name="october_date_format">%d октября</string>
+    <string name="november_date_format">%d ноября</string>
+    <string name="december_date_format">%d декабря</string>
     <string name="sleep">Сон</string>
     <string name="passive">Пассивность</string>
     <string name="recreation">Отдых</string>
@@ -56,4 +68,8 @@
     <string name="hour_short">ч.</string>
     <string name="hours">Часы:</string>
     <string name="days">Дни:</string>
+    <string name="today">Сегодня</string>
+    <string name="yesterday">Вчера</string>
+    <string name="general">Общая</string>
+    <string name="by_days">По дням</string>
 </resources>

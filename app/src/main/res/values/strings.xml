@@ -14,6 +14,18 @@
     <string name="october">October</string>
     <string name="november">November</string>
     <string name="december">December</string>
+    <string name="january_date_format">%d January</string>
+    <string name="february_date_format">%d February</string>
+    <string name="march_date_format">%d March</string>
+    <string name="april_date_format">%d April</string>
+    <string name="may_date_format">%d May</string>
+    <string name="june_date_format">%d June</string>
+    <string name="july_date_format">%d July</string>
+    <string name="august_date_format">%d August</string>
+    <string name="september_date_format">%d September</string>
+    <string name="october_date_format">%d October</string>
+    <string name="november_date_format">%d November</string>
+    <string name="december_date_format">%d December</string>
     <string name="sleep">Sleep</string>
     <string name="passive">Passive</string>
     <string name="recreation">Recreation</string>
@@ -55,4 +67,8 @@
     <string name="hour_short">h.</string>
     <string name="hours">Hours:</string>
     <string name="days">Days:</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="general">General</string>
+    <string name="by_days">By days</string>
 </resources>

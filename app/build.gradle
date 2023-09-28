@@ -70,8 +70,8 @@ dependencies {
 
     implementation "me.saket.cascade:cascade-compose:2.2.0"
 
-    implementation "com.google.accompanist:accompanist-pager:0.20.0"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.13.0"
+    implementation "com.google.accompanist:accompanist-pager:0.21.2-beta"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.21.2-beta"
 
     // ViewModel Compose
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1"

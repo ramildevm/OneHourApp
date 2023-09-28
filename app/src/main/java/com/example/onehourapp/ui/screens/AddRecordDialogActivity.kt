@@ -33,7 +33,7 @@ class AddRecordDialogActivity : ComponentActivity() {
                 var showDialog by remember { mutableStateOf(true) }
                 if (showDialog)
                 AddRecordDialog (
-                    date = Calendar.getInstance().timeInMillis,
+                    date = CalendarUtil.getCurrentDayMillis(),
                     hour = hour!!,
                     AddCallerType.NOTIFICATION,
                     onDismiss = {showDialog = false},

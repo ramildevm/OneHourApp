@@ -99,3 +99,10 @@ val ActivityListItemFont2 = TextStyle(
     fontSize = 15.sp,
     letterSpacing = 0.15.sp,
 )
+
+val PieChartLabelFont = TextStyle(
+    color = Color.White,
+    fontWeight = FontWeight.Medium,
+    fontSize = 12.sp,
+    letterSpacing = 0.15.sp,
+)

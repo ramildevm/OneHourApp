@@ -35,6 +35,11 @@ class ActivityRecordRepository @Inject constructor(
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
         return activityRecordDao.getActivityRecordsByInterval(startOfMonth,endOfMonth)
     }
+    fun getActivityRecordsByDay(year: Int, month: Int, day: Int): Flow<List<ActivityRecord>> {
+        val startOfDay = CalendarUtil.getDayStartMillis(year, month, day)
+        val endOfDay = startOfDay + 82800000L
+        return activityRecordDao.getActivityRecordsByInterval(startOfDay, endOfDay)
+    }
     fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year: Int, month: Int): Int {
         val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
@@ -60,5 +65,6 @@ class ActivityRecordRepository @Inject constructor(
             activityRecordDao.insertActivityRecord(ActivityRecord(oldActivityRecord.id,activityRecord.activityId,activityRecord.timestamp))
     }
     suspend fun deleteActivityRecord(activityRecord: ActivityRecord) = activityRecordDao.deleteActivityRecord(activityRecord)
+
 
 }

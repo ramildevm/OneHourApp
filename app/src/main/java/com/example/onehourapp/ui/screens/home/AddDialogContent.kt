@@ -11,13 +11,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
@@ -25,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,7 +32,6 @@ import com.example.onehourapp.R
 import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.UserSettings
-import com.example.onehourapp.ui.components.NumberPicker
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
@@ -44,11 +39,7 @@ import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.CalendarUtil
-import com.google.accompanist.pager.ExperimentalPagerApi
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.first
 import java.util.Calendar
-import java.util.Random
 
 
 sealed class AddCallerType {
@@ -72,6 +63,7 @@ fun AddRecordDialog(
     val activityViewModel: ActivityViewModel = hiltViewModel()
     val activityRecordViewModel: ActivityRecordViewModel = hiltViewModel()
     val userSettingsViewModel: UserSettingsViewModel = hiltViewModel()
+
     var userSettings: UserSettings? by remember {
         mutableStateOf(null)
     }
@@ -160,7 +152,7 @@ fun AddRecordDialog(
 
                     val mDatePickerDialog = DatePickerDialog(
                         context,
-                        { dp: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+                        { _, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
                             selectedDateMillis =
                                 CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
                             mDate.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
@@ -201,7 +193,6 @@ fun AddRecordDialog(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    //Todo: прогрузка последней выбранной активности и даты создать сущность бд для этого
 
 //                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
 //                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
@@ -346,9 +337,9 @@ fun AddRecordDialog(
                         )
                     } else
                         Spacer(modifier = Modifier.height(16.dp))
-                    var start =
+                    val start =
                         if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
-                    var end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
+                    val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
                     var sliderPosition by remember { mutableStateOf(start..end) }
                     Box(Modifier.fillMaxWidth()) {
                         Text(stringResource(id = R.string.time))
@@ -404,7 +395,7 @@ fun AddRecordDialog(
                             activityViewModel.insertActivity(
                                 Activity(
                                     0,
-                                    selectedActivityName,
+                                    selectedActivityName.trim(),
                                     selectedCategoryId
                                 )
                             )

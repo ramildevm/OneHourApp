@@ -622,7 +622,7 @@ fun AddCategoryDialog(
                                 .padding(horizontal = 10.dp)) {
                             TextButton(onClick = {
                                  if(text.isNotEmpty() && selectedColor!=null){
-                                     onConfirm(text, selectedColor!!)
+                                     onConfirm(text.trim(), selectedColor!!)
                                  }
                                 if(text.isEmpty()){
                                     isTextFieldEmpty = true

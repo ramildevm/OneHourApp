@@ -1,6 +1,9 @@
 package com.example.onehourapp.ui.screens.home.calendar
 
+import android.graphics.Typeface
+import android.text.TextUtils
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,6 +40,10 @@ import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Snackbar
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
@@ -63,15 +71,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
@@ -81,12 +93,21 @@ import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import co.yml.charts.axis.AxisData
+import co.yml.charts.common.components.Legends
+import co.yml.charts.common.model.LegendLabel
+import co.yml.charts.common.model.LegendsConfig
+import co.yml.charts.common.model.PlotType
 import co.yml.charts.common.model.Point
 import co.yml.charts.ui.barchart.BarChart
 import co.yml.charts.ui.barchart.models.BarChartData
 import co.yml.charts.ui.barchart.models.BarData
 import co.yml.charts.ui.barchart.models.BarStyle
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
+import co.yml.charts.ui.piechart.utils.proportion
 import com.example.onehourapp.R
+import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
 import com.example.onehourapp.ui.helpers.pagerFanTransition
 import com.example.onehourapp.ui.theme.ActivityListItemFont2
@@ -100,14 +121,13 @@ import com.example.onehourapp.ui.theme.CategoryListItemFont2
 import com.example.onehourapp.ui.theme.CategoryListItemFont2Inner
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.MainFont
+import com.example.onehourapp.ui.theme.PieChartLabelFont
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.utils.CalendarUtil
-import hu.ma.charts.legend.data.LegendPosition
-import hu.ma.charts.pie.PieChart
-import hu.ma.charts.pie.data.PieChartData
-import hu.ma.charts.pie.data.PieChartEntry
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.pagerTabIndicatorOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -125,13 +145,14 @@ data class ActivityRecordView(
     val hour: Int,
     val color: Color
 )
+
 data class RecordCountCategory(
     val category: Category,
     val count: Int
 )
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
     var isLoaded by remember {
         mutableStateOf(false)
@@ -180,10 +201,12 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
     val loadedData = remember {
         mutableStateMapOf<Int, List<ActivityRecordView>>()
     }
-    var loadedCategoriesCount = remember {
+    val loadedCategoriesCount = remember {
         mutableStateMapOf<Int, List<RecordCountCategory>>()
     }
     categoryViewModel.sortType = CategoryViewModel.SortType.COLOR
+
+    val tabPagerState = com.google.accompanist.pager.rememberPagerState(0)
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
@@ -285,15 +308,17 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             activityViewModel,
                             categoryViewModel
                         )
-                    if(loadedCategoriesCount[pageIndex%12]==null){
-                        loadedCategoriesCount[pageIndex%12] = categoryViewModel.getCategories().first().map {category->
-                            val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
-                                category.id,
-                                year,
-                                pageIndex%12,
-                            )
-                            RecordCountCategory(category, count)
-                        }.filter { it.count>0 }
+                    if (loadedCategoriesCount[pageIndex % 12] == null) {
+                        loadedCategoriesCount[pageIndex % 12] =
+                            categoryViewModel.getCategories().first().map { category ->
+                                val count =
+                                    activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
+                                        category.id,
+                                        year,
+                                        pageIndex % 12,
+                                    )
+                                RecordCountCategory(category, count)
+                            }.filter { it.count > 0 }
                     }
                 }
                 if (changedMonth.value != -1) {
@@ -305,7 +330,14 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             activityViewModel,
                             categoryViewModel
                         )
-                        updateLoadedCategoriesCountList(loadedCategoriesCount,year, changedMonth.value,activityRecordViewModel,categoryViewModel)
+                        updateLoadedCategoriesCountList(
+                            loadedCategoriesCount,
+                            year,
+                            changedMonth.value,
+                            activityRecordViewModel,
+                            categoryViewModel
+                        )
+                        tabPagerState.animateScrollToPage(0)
                         changedMonth.value = -1
                     }
 
@@ -403,233 +435,462 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     )
                     .background(BackgroundSecondColor)
             ) {
-                val loadedCategories = loadedCategoriesCount[pagerState.currentPage%12]
-                LazyColumn(Modifier.padding(top = 30.dp)) {
-                    if(loadedCategories != null) {
-                        item {
-                            Box(Modifier.wrapContentSize()) {
-                                val totalHours =
-                                    24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
-                                val pieChartData = PieChartData(
-                                    entries = loadedCategories.mapIndexed { _, value ->
-                                        PieChartEntry(
-                                            value = value.count.toFloat(),
-                                            label = AnnotatedString(
-                                                value.category.name + String.format(
-                                                    " - %.1f",
-                                                    (value.count / totalHours * 100f)
-                                                ) + "%"
-                                            ),
-                                            color = Color(value.category.color.toColorInt())
-                                        )
-                                    }.plus(
-                                        PieChartEntry(
-                                            value = totalHours - loadedCategories.sumOf { it.count },
-                                            label = AnnotatedString(
-                                                "N/A"
-                                            ),
-                                            color = Color.Gray
-                                        )
-                                    ).filter { it.value > 0f },
-                                    colors = loadedCategories
-                                        .map { value -> Color(value.category.color.toColorInt()) }
-                                        .plus(Color.Gray),
-                                    legendPosition = LegendPosition.End,
-                                    legendShape = CircleShape,
-                                )
-
-                                PieChart(
-                                    data = pieChartData,
-                                    chartSize = 140.dp,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterStart)
-                                        .padding(32.dp)
-                                )
-                            }
-                        }
-                        item{
-                            Column(verticalArrangement = Arrangement.Center) {
-                                val listFirstCategory = if (loadedCategories.isNotEmpty()) loadedCategories.first().category else null
-
-                                if(listFirstCategory!=null) {
-                                    var selectedCategory: Category by remember {
-                                        mutableStateOf(listFirstCategory)
-                                    }
-                                    var categoryListExpanded by remember {
-                                        mutableStateOf(false)
-                                    }
-                                    ExposedDropdownMenuBox(
-                                        expanded = categoryListExpanded,
-                                        onExpandedChange = {
-                                            categoryListExpanded = !categoryListExpanded
-                                        },
-                                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 10.dp).fillMaxWidth(),
-                                    ) {
-                                        TextField(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            value = selectedCategory.name,
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Default.Circle,
-                                                    tint = Color(selectedCategory.color.toColorInt()),
-                                                    contentDescription = null
-                                                )
-                                            },
-                                            trailingIcon = {
-                                                ExposedDropdownMenuDefaults.TrailingIcon(
-                                                    expanded = categoryListExpanded
-                                                )
-                                            },
-                                        )
-                                        ExposedDropdownMenu(
-                                            expanded = categoryListExpanded,
-                                            onDismissRequest = { categoryListExpanded = false }
+                val titles = listOf(stringResource(R.string.general), stringResource(R.string.by_days))
+                val month =  pagerState.currentPage % 12
+                com.google.accompanist.pager.HorizontalPager(modifier = Modifier
+                    .padding(top = 80.dp)
+                    .fillMaxWidth(),
+                    state = tabPagerState, count = titles.size) { page->
+                    LazyColumn {
+                        when (page) {
+                            0 -> {
+                                val loadedCategories = loadedCategoriesCount[month]
+                                if (loadedCategories != null) {
+                                    item {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Box(
+                                            Modifier
+                                                .wrapContentSize()
+                                                .background(BackgroundSecondColor)
                                         ) {
-                                            loadedCategories.map { it.category }
-                                                .forEach { category ->
-                                                    DropdownMenuItem(
-                                                        content = {
-                                                            Row {
-                                                                Text(
-                                                                    "● ",
-                                                                    fontSize = 20.sp,
-                                                                    color = Color(category.color.toColorInt())
-                                                                )
-                                                                Text(text = category.name)
-                                                            }
-                                                        },
-                                                        onClick = {
-                                                            selectedCategory = category
-                                                            categoryListExpanded = false
-                                                        }
+                                            val totalHours =
+                                                24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
+                                            val pieChartData = PieChartData(
+                                                slices = loadedCategories.mapIndexed { _, value ->
+                                                    PieChartData.Slice(
+                                                        label =
+                                                        value.category.name + String.format(
+                                                            " - %.1f",
+                                                            (value.count / totalHours * 100f)
+                                                        ) + "%",
+                                                        color = Color(value.category.color.toColorInt()),
+                                                        value = value.count.toFloat()
+                                                    )
+                                                }.plus(
+                                                    PieChartData.Slice(
+                                                        value = totalHours - loadedCategories.sumOf { it.count },
+                                                        label = "N/A",
+                                                        color = Color.Gray
+                                                    )
+                                                ),
+                                                plotType = PlotType.Donut
+                                            )
+                                            key(pieChartData.hashCode()) {
+                                                val pieChartConfig =
+                                                    PieChartConfig(
+                                                        labelVisible = true,
+                                                        strokeWidth = 100f,
+                                                        labelColor = Color.White,
+                                                        inActiveSliceAlpha = .8f,
+                                                        isEllipsizeEnabled = true,
+                                                        labelTypeface = Typeface.defaultFromStyle(
+                                                            Typeface.NORMAL
+                                                        ),
+                                                        isAnimationEnable = false,
+                                                        chartPadding = 40,
+                                                        labelFontSize = 30.sp,
+                                                        backgroundColor = BackgroundSecondColor,
+                                                        sliceLabelEllipsizeAt = TextUtils.TruncateAt.MIDDLE
+                                                    )
+                                                Column(
+                                                    Modifier
+                                                        .height(450.dp)
+                                                        .background(BackgroundSecondColor)
+                                                ) {
+                                                    val legendsList = mutableListOf<LegendLabel>()
+                                                    pieChartData.slices.forEach { slice ->
+                                                        legendsList.add(
+                                                            LegendLabel(
+                                                                slice.color,
+                                                                slice.label
+                                                            )
+                                                        )
+                                                    }
+                                                    Legends(
+                                                        legendsConfig = LegendsConfig(
+                                                            legendLabelList = legendsList,
+                                                            gridColumnCount = 3,
+                                                            legendsArrangement = Arrangement.Start,
+                                                            textStyle = PieChartLabelFont,
+                                                            colorBoxSize = 15.dp,
+                                                            textSize = 10.sp
+                                                        )
+                                                    )
+                                                    DonutPieChart(
+                                                        modifier = Modifier
+                                                            .background(BackgroundSecondColor)
+                                                            .fillMaxWidth()
+                                                            .weight(1f),
+                                                        pieChartData,
+                                                        pieChartConfig
                                                     )
                                                 }
+                                            }
                                         }
                                     }
+                                    item {
+                                        Column(verticalArrangement = Arrangement.Center) {
+                                            val listFirstCategory =
+                                                if (loadedCategories.isNotEmpty()) loadedCategories.first().category else null
+                                            if (listFirstCategory != null) {
+                                                var selectedCategory: Category by remember {
+                                                    mutableStateOf(listFirstCategory)
+                                                }
+                                                var categoryListExpanded by remember {
+                                                    mutableStateOf(false)
+                                                }
+                                                ExposedDropdownMenuBox(
+                                                    expanded = categoryListExpanded,
+                                                    onExpandedChange = {
+                                                        categoryListExpanded = !categoryListExpanded
+                                                    },
+                                                    modifier = Modifier
+                                                        .align(Alignment.CenterHorizontally)
+                                                        .padding(horizontal = 10.dp)
+                                                        .fillMaxWidth(),
+                                                ) {
+                                                    TextField(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        value = selectedCategory.name,
+                                                        onValueChange = {},
+                                                        readOnly = true,
+                                                        leadingIcon = {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Circle,
+                                                                tint = Color(selectedCategory.color.toColorInt()),
+                                                                contentDescription = null
+                                                            )
+                                                        },
+                                                        trailingIcon = {
+                                                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                                                expanded = categoryListExpanded
+                                                            )
+                                                        },
+                                                    )
+                                                    ExposedDropdownMenu(
+                                                        expanded = categoryListExpanded,
+                                                        onDismissRequest = {
+                                                            categoryListExpanded = false
+                                                        }
+                                                    ) {
+                                                        loadedCategories.map { it.category }
+                                                            .forEach { category ->
+                                                                DropdownMenuItem(
+                                                                    content = {
+                                                                        Row {
+                                                                            Text(
+                                                                                "● ",
+                                                                                fontSize = 20.sp,
+                                                                                color = Color(category.color.toColorInt())
+                                                                            )
+                                                                            Text(text = category.name)
+                                                                        }
+                                                                    },
+                                                                    onClick = {
+                                                                        selectedCategory = category
+                                                                        categoryListExpanded = false
+                                                                    }
+                                                                )
+                                                            }
+                                                    }
+                                                }
 
-                                    val barDataList: ArrayList<BarData> =
-                                        getBarDataListByCategoryInMonth(
-                                            activityRecordViewModel,
-                                            selectedCategory,
-                                            year,
-                                            pagerState.currentPage % 12
-                                        )
-                                    val ySteps = 25
-                                    val xSteps = CalendarUtil.getDaysInMonth(
-                                        pagerState.currentPage % 12,
-                                        year
-                                    ) + 2
-                                    val hourString = stringResource(id = R.string.hours)
-                                    val daysString = stringResource(id = R.string.days)
+                                                val barDataList: ArrayList<BarData> =
+                                                    getBarDataListByCategoryInMonth(
+                                                        activityRecordViewModel,
+                                                        selectedCategory,
+                                                        year,
+                                                        pagerState.currentPage % 12
+                                                    )
+                                                val ySteps = 25
+                                                val xSteps = CalendarUtil.getDaysInMonth(
+                                                    pagerState.currentPage % 12,
+                                                    year
+                                                ) + 2
+                                                val hourString = stringResource(id = R.string.hours)
+                                                val daysString = stringResource(id = R.string.days)
 
-                                    val yAxisData = AxisData.Builder()
-                                        .backgroundColor(BackgroundSecondColor)
-                                        .axisLabelColor(Color.White)
-                                        .startPadding(20.dp)
-                                        .axisLineColor(Color.White)
-                                        .steps(ySteps)
-                                        .axisOffset(20.dp)
-                                        .axisLabelFontSize(10.sp)
-                                        .labelData { index ->
-                                            if(index>24)
-                                                hourString
-                                            else
-                                                String.format(
-                                                    "%4d",
-                                                    index
-                                                ) //+ hourShortString
+                                                val yAxisData = AxisData.Builder()
+                                                    .backgroundColor(BackgroundSecondColor)
+                                                    .axisLabelColor(Color.White)
+                                                    .startPadding(20.dp)
+                                                    .axisLineColor(Color.White)
+                                                    .steps(ySteps)
+                                                    .axisOffset(20.dp)
+                                                    .axisLabelFontSize(10.sp)
+                                                    .labelData { index ->
+                                                        if (index > 24)
+                                                            hourString
+                                                        else
+                                                            String.format(
+                                                                "%4d",
+                                                                index
+                                                            ) //+ hourShortString
+                                                    }
+                                                    .build()
+
+                                                val xAxisData = AxisData.Builder()
+                                                    .backgroundColor(BackgroundSecondColor)
+                                                    .axisLabelColor(Color.White)
+                                                    .axisLineColor(Color.White)
+                                                    .steps(xSteps)
+                                                    .bottomPadding(20.dp)
+                                                    .labelData { index ->
+                                                        if (index != 0 && index != xSteps - 1)
+                                                            index.toString()
+                                                        else
+                                                            ""
+                                                    }
+                                                    .build()
+
+
+                                                val barChartData = BarChartData(
+                                                    backgroundColor = BackgroundSecondColor,
+                                                    chartData = barDataList,
+                                                    xAxisData = xAxisData,
+                                                    yAxisData = yAxisData,
+                                                    barStyle = BarStyle(
+                                                        20.dp,
+                                                        paddingBetweenBars = 3.dp
+                                                    ),
+                                                )
+                                                Box(
+                                                    Modifier
+                                                        .height(300.dp)
+                                                        .background(BackgroundSecondColor)
+                                                ) {
+                                                    BarChart(
+                                                        modifier = Modifier
+                                                            .background(BackgroundSecondColor)
+                                                            .fillMaxWidth()
+                                                            .height(300.dp),
+                                                        barChartData = barChartData
+                                                    )
+                                                    Box(
+                                                        Modifier
+                                                            .fillMaxSize()
+                                                            .background(
+                                                                brush = Brush.horizontalGradient(
+                                                                    0f to Color.Transparent,
+                                                                    0.9f to Color.Transparent,
+                                                                    0.93f to BackgroundSecondColor,
+                                                                    1f to BackgroundSecondColor
+                                                                )
+                                                            )
+                                                    )
+                                                    Text(
+                                                        daysString,
+                                                        fontSize = 14.sp,
+                                                        modifier = Modifier
+                                                            .padding(
+                                                                horizontal = 18.dp,
+                                                                vertical = 14.dp
+                                                            )
+                                                            .align(Alignment.BottomStart)
+                                                    )
+                                                }
+                                            }
                                         }
-                                        .build()
+                                    }
+                                    itemsIndexed(loadedCategories.filter { it.count > 0 }) { _, category ->
+                                        var expanded by remember {
+                                            mutableStateOf(false)
+                                        }
+                                        Card(
+                                            modifier = Modifier.padding(
+                                                vertical = 4.dp,
+                                                horizontal = 8.dp
+                                            ),
+                                            backgroundColor = CardCategoryColorSecond,
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            CategoryCardContent(
+                                                category,
+                                                year,
+                                                pagerState.currentPage % 12,
+                                                activityViewModel,
+                                                activityRecordViewModel,
+                                                expanded
+                                            ) { expanded = !expanded }
+                                        }
 
-                                    val xAxisData = AxisData.Builder()
-                                        .backgroundColor(BackgroundSecondColor)
-                                        .axisLabelColor(Color.White)
-                                        .axisLineColor(Color.White)
-                                        .steps(xSteps)
-                                        .bottomPadding(20.dp)
-                                        .labelData { index ->
-                                            if (index != 0 && index != xSteps - 1)
-                                                index.toString()
-                                            else
-                                                "" }
-                                        .build()
-
-
-                                    val barChartData = BarChartData(
-                                        backgroundColor = BackgroundSecondColor,
-                                        chartData = barDataList,
-                                        xAxisData = xAxisData,
-                                        yAxisData = yAxisData,
-                                        barStyle = BarStyle(20.dp, paddingBetweenBars = 3.dp),
-                                    )
-                                    Box(Modifier
-                                        .height(300.dp)
-                                        .background(BackgroundSecondColor)) {
-                                        BarChart(
-                                            modifier = Modifier
-                                                .background(BackgroundSecondColor)
-                                                .fillMaxWidth()
-                                                .height(300.dp),
-                                            barChartData = barChartData
-                                        )
-                                        Box(Modifier.fillMaxSize().background(brush = Brush.horizontalGradient(
-                                                0f to Color.Transparent,
-                                                0.9f to Color.Transparent,
-                                                0.93f to  BackgroundSecondColor,
-                                                1f to  BackgroundSecondColor
-                                        )))
-                                        Text(daysString, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp).align(Alignment.BottomStart))
                                     }
                                 }
                             }
-                        }
-                        itemsIndexed(loadedCategories.filter { it.count > 0 }) { _, category ->
-                            var expanded by remember {
-                                mutableStateOf(false)
-                            }
-                            Card(
-                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                backgroundColor = CardCategoryColorSecond,
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                CategoryCardContent(
-                                    category,
-                                    year,
-                                    pagerState.currentPage % 12,
-                                    activityViewModel,
-                                    activityRecordViewModel,
-                                    expanded
-                                ) { expanded = !expanded }
-                            }
+                            1 -> {
+                                val isCurrentMonth = month == CalendarUtil.getCurrentMonth()
+                                val itemsCount = if(isCurrentMonth) CalendarUtil.getCurrentDay() else CalendarUtil.getDaysInMonth(month)
+                                for(dayNumber in itemsCount downTo 1){
+                                    val activityViewList = mutableListOf<Pair<Int, Int>>()
+                                    for(time in 0..23) {
+                                        val activityRecord =
+                                            activityRecordViewModel.getActivityRecordByTime(
+                                                year,
+                                                month,
+                                                dayNumber,
+                                                time
+                                            ) ?: ActivityRecord(0, 0, 0L)
+                                        activityViewList.add(time to activityRecord.activityId)
+                                    }
+                                    val outputList = mutableListOf<Triple<Int, Int, Int>>()
+                                    var currentId: Int? = null
+                                    var count = 0
+                                    var isListEmpty = true
+                                    for ((time, id) in activityViewList) {
+                                        if (id != currentId) {
+                                            if(id!=0) isListEmpty = false
+                                            if (currentId != null) {
+                                                outputList.add(Triple(time-count, currentId, count))
+                                            }
+                                            currentId = id
+                                            count = 1
+                                        } else {
+                                            count++
+                                        }
+                                    }
+                                    if (currentId != null) {
+                                        outputList.add(Triple(activityViewList.last().first-count+1, currentId, count))
+                                    }
+                                    item{
+                                        val monthsFormatted = listOf(
+                                            stringResource(R.string.january_date_format),
+                                            stringResource(R.string.february_date_format),
+                                            stringResource(R.string.march_date_format),
+                                            stringResource(R.string.april_date_format),
+                                            stringResource(R.string.may_date_format),
+                                            stringResource(R.string.june_date_format),
+                                            stringResource(R.string.july_date_format),
+                                            stringResource(R.string.august_date_format),
+                                            stringResource(R.string.september_date_format),
+                                            stringResource(R.string.september_date_format),
+                                            stringResource(R.string.november_date_format),
+                                            stringResource(R.string.december_date_format)
+                                        )
+                                        if(!isListEmpty) {
+                                            val dayText = if(isCurrentMonth && dayNumber == CalendarUtil.getCurrentDay())
+                                                stringResource(id = R.string.today)
+                                            else if(isCurrentMonth && dayNumber == CalendarUtil.getCurrentDay() - 1)
+                                                stringResource(id = R.string.yesterday)
+                                            else
+                                                String.format(monthsFormatted[month], dayNumber)
+                                            Text(
+                                                modifier = Modifier
+                                                    .padding(top = 10.dp, bottom = 4.dp)
+                                                    .padding(
+                                                        horizontal = 25.dp
+                                                    ),
+                                                fontSize = 16.sp,
+                                                color = MainColorSecondRed,
+                                                text = dayText,
+                                                fontWeight = FontWeight.ExtraBold
+                                            )
+                                            Spacer(modifier = Modifier
+                                                .padding(bottom = 6.dp)
+                                                .padding(horizontal = 20.dp)
+                                                .clip(
+                                                    RoundedCornerShape(5.dp)
+                                                )
+                                                .background(
+                                                    MainColorSecondRed
+                                                )
+                                                .height(3.dp)
+                                                .fillMaxWidth())
+                                        }
+                                    }
+                                    item {
+                                        Column(Modifier.fillMaxWidth()) {
+                                            for ((time, id, count) in outputList){
+                                                if(id!=0) {
+                                                    val activity = activityViewModel.getActivityById(id)
+                                                    val category = categoryViewModel.getCategoryById(activity!!.categoryId)
+                                                    Row(horizontalArrangement = Arrangement.Center){
+                                                        Text(
+                                                            modifier = Modifier
+                                                                .padding(start = 10.dp)
+                                                                .align(Alignment.CenterVertically),
+                                                            text = "● ",
+                                                            color = Color(category.color.toColorInt()),
+                                                            fontSize = 25.sp
+                                                        )
+                                                        Text( modifier = Modifier
+                                                            .padding(bottom = 3.dp, end = 10.dp)
+                                                            .align(Alignment.CenterVertically)
+                                                            .wrapContentHeight()
+                                                            .weight(.75f), text= activity.name + ":", fontWeight = FontWeight.Medium)
+                                                        Text(modifier = Modifier
+                                                            .align(Alignment.CenterVertically)
+                                                            .alpha(.75f),text = String.format("%02d:00 - %02d:00"
+                                                            , time, time + count ), fontWeight = FontWeight.Bold
+                                                        )
+                                                        Text(fontWeight = FontWeight.Bold,
+                                                            modifier = Modifier
+                                                                .align(Alignment.CenterVertically)
+                                                                .padding(
+                                                                    horizontal = 4.dp
+                                                                )
+                                                                .weight(.25f)
+                                                                .padding(end = 6.dp), textAlign = TextAlign.End, text = "$count " + stringResource(id = R.string.hour_short))
+                                                    }
+                                                }
 
+                                            }
+                                        }
+                                    }
+                                }
+                                item {
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                }
+                            }
+                        }
+                    }
+
+                }
+                Column(Modifier.height(80.dp)) {
+                    Text(
+                        text = stringResource(id = R.string.information),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .background(BackgroundSecondColor),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    TabRow(
+                        indicator = { tabPositions ->
+                        TabRowDefaults.Indicator(
+                            Modifier.pagerTabIndicatorOffset(
+                                tabPagerState,
+                                tabPositions
+                            )
+                        )
+                        },
+                        modifier = Modifier.weight(1f),
+                        selectedTabIndex = tabPagerState.currentPage,
+                        backgroundColor = BackgroundSecondColor
+                    ) {
+                        titles.forEachIndexed { index, title ->
+                            Tab(
+                                text = { Text(title) },
+                                selected = tabPagerState.currentPage == index,
+                                onClick = {
+                                    scope.launch {
+                                        tabPagerState.animateScrollToPage(index)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
-                Text(
-                    text = stringResource(id = R.string.information),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .height(40.dp)
-                        .background(brush = Brush.verticalGradient(
-                            0f to BackgroundSecondColor,
-                            0.7f to BackgroundSecondColor,
-                            1f to Color.Transparent
-                        ))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
             }
         })
-    if(!isLoaded)
+    if (!isLoaded)
         Box(
             Modifier
                 .fillMaxSize()
-                .background(BackgroundColor)){
+                .background(BackgroundColor)
+        ) {
             CircularProgressIndicator(
                 Modifier.align(Alignment.Center),
                 color = MainColorSecondRed
@@ -637,7 +898,6 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
         }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CategoryCardContent(
     category: RecordCountCategory,
@@ -675,7 +935,8 @@ fun CategoryCardContent(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
-                    .weight(1f)) {
+                    .weight(1f)
+            ) {
                 Text(
                     text = category.category.name,
                     modifier = Modifier
@@ -702,7 +963,8 @@ fun CategoryCardContent(
         }
         if (expanded) {
             val activities =
-                activityViewModel.getActivities(category.category.id).collectAsState(initial = emptyList())
+                activityViewModel.getActivities(category.category.id)
+                    .collectAsState(initial = emptyList())
             Column(modifier = Modifier.background(CardCategoryColorSecond)) {
                 activities.value.forEach { activity ->
                     key(activity.hashCode()) {
@@ -733,7 +995,12 @@ fun CategoryCardContent(
                                         .weight(1f),
                                     style = ActivityListItemFont2
                                 )
-                                val activityHourCount = activityRecordViewModel.getActivityRecordsCountByActivityInMonth(activity.id, year, month)
+                                val activityHourCount =
+                                    activityRecordViewModel.getActivityRecordsCountByActivityInMonth(
+                                        activity.id,
+                                        year,
+                                        month
+                                    )
                                 Text(
                                     modifier = Modifier
                                         .padding(horizontal = 4.dp)
@@ -757,26 +1024,32 @@ fun getBarDataListByCategoryInMonth(
     month: Int
 ): ArrayList<BarData> {
     val list = arrayListOf<BarData>()
-    val maxX = CalendarUtil.getDaysInMonth(month,year)
-    list.add(BarData(Point(0f,0f)))
-    if(category!=null)
-    for(index in 1 .. maxX) {
-        val count = activityRecordViewModel.getActivityRecordsCountByCategoryInDay(category.id,year, month, index)
-        val point = Point(
-            x = index.toFloat(),
-            y = count.toFloat()
-        )
-        list.add(
-            BarData(
-                point = point,
-                color = Color(category.color.toColorInt()),
-                label = "$index",
+    val maxX = CalendarUtil.getDaysInMonth(month, year)
+    list.add(BarData(Point(0f, 0f)))
+    if (category != null)
+        for (index in 1..maxX) {
+            val count = activityRecordViewModel.getActivityRecordsCountByCategoryInDay(
+                category.id,
+                year,
+                month,
+                index
             )
-        )
-    }
-    list.add(BarData(Point(maxX+1f,0f)))
+            val point = Point(
+                x = index.toFloat(),
+                y = count.toFloat()
+            )
+            list.add(
+                BarData(
+                    point = point,
+                    color = Color(category.color.toColorInt()),
+                    label = "$index",
+                )
+            )
+        }
+    list.add(BarData(Point(maxX + 1f, 0f)))
     return list
 }
+
 suspend fun updateLoadedCategoriesCountList(
     loadedCategoriesCount: SnapshotStateMap<Int, List<RecordCountCategory>>,
     year: Int,
@@ -784,15 +1057,17 @@ suspend fun updateLoadedCategoriesCountList(
     activityRecordViewModel: ActivityRecordViewModel,
     categoryViewModel: CategoryViewModel
 ) {
-    loadedCategoriesCount[month] = categoryViewModel.getCategories().first().toList().map {category->
-        val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
-            category.id,
-            year,
-            month,
-        )
-        RecordCountCategory(category, count)
-    }.filter { it.count > 0 }
+    loadedCategoriesCount[month] =
+        categoryViewModel.getCategories().first().toList().map { category ->
+            val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
+                category.id,
+                year,
+                month,
+            )
+            RecordCountCategory(category, count)
+        }.filter { it.count > 0 }
 }
+
 suspend fun updateLoadedData(
     loadedData: SnapshotStateMap<Int, List<ActivityRecordView>>,
     pageIndex: Int,
