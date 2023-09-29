@@ -3,6 +3,7 @@ package com.example.onehourapp.data.repositories
 import com.example.onehourapp.data.database.dao.ActivityRecordDao
 import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
+import com.example.onehourapp.data.models.dto.CategoryCount
 import com.example.onehourapp.utils.CalendarUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.last
@@ -21,6 +22,11 @@ class ActivityRecordRepository @Inject constructor(
         val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
         return activityRecordDao.getActivityRecordsCountByActivityId(activityId, startOfMonth, endOfMonth)
+    }
+    fun getActivityRecordsCountByActivityInYear(activityId:Int, year: Int) :Int{
+        val startOfYear = CalendarUtil.getYearStartMillis(year)
+        val startOfNextYear = CalendarUtil.getYearStartMillis(year + 1)
+        return activityRecordDao.getActivityRecordsCountByActivityId(activityId, startOfYear, startOfNextYear)
     }
     fun getActivityRecordsByInterval(startTimestamp:Long, endTimeStamp:Long) :Flow<List<ActivityRecord>>{
         return activityRecordDao.getActivityRecordsByInterval(startTimestamp,endTimeStamp)
@@ -44,6 +50,16 @@ class ActivityRecordRepository @Inject constructor(
         val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
         val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
         return activityRecordDao.getActivityRecordsCountByCategoryId(categoryId, startOfMonth,endOfMonth)
+    }
+    fun getActivityRecordsCountListByCategoriesInMonth(year: Int, month: Int): Flow<List<CategoryCount>> {
+        val startOfMonth = CalendarUtil.getMonthStartMillis(year, month)
+        val endOfMonth = CalendarUtil.getMonthStartMillis(year + if(month==11) 1 else 0,   if(month==11) 0 else month + 1)
+        return activityRecordDao.getActivityRecordsCountListByCategories(startOfMonth,endOfMonth)
+    }
+    fun getActivityRecordsCountListByCategoriesInYear(year: Int): Flow<List<CategoryCount>> {
+        val startOfYear = CalendarUtil.getYearStartMillis(year)
+        val startOfNextYear = CalendarUtil.getYearStartMillis(year+1)
+        return activityRecordDao.getActivityRecordsCountListByCategories(startOfYear, startOfNextYear)
     }
     fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year: Int, month: Int, day: Int): Int {
         val startOfDay = CalendarUtil.getDayStartMillis(year, month, day)

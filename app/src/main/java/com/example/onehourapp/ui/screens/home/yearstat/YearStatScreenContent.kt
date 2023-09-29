@@ -1,30 +1,62 @@
 package com.example.onehourapp.ui.screens.home.yearstat
-import android.util.Log
+import android.graphics.Typeface
+import android.text.TextUtils
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.PriorityHigh
 import androidx.compose.material.icons.rounded.ArrowLeft
 import androidx.compose.material.icons.rounded.ArrowRight
+import androidx.compose.material.icons.rounded.Circle
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -33,19 +65,46 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import co.yml.charts.common.components.Legends
+import co.yml.charts.common.model.LegendLabel
+import co.yml.charts.common.model.LegendsConfig
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.charts.PieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.onehourapp.R
+import com.example.onehourapp.data.models.dto.CategoryCount
+import com.example.onehourapp.ui.screens.home.calendar.CategoryCardContent
+import com.example.onehourapp.ui.screens.home.calendar.RecordCountCategory
+import com.example.onehourapp.ui.theme.ActivityListItemFont2
 import com.example.onehourapp.ui.theme.BackgroundColor
+import com.example.onehourapp.ui.theme.BackgroundSecondColor
+import com.example.onehourapp.ui.theme.CardActivityColor
+import com.example.onehourapp.ui.theme.CardCategoryColorSecond
+import com.example.onehourapp.ui.theme.CategoryListItemFont2
+import com.example.onehourapp.ui.theme.CategoryListItemFont2Inner
+import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.ui.theme.PieChartLabelFont
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.utils.CalendarUtil
+import hu.ma.charts.bars.HorizontalBarsChart
+import hu.ma.charts.bars.data.HorizontalBarsData
+import hu.ma.charts.bars.data.StackedBarData
+import hu.ma.charts.bars.data.StackedBarEntry
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -56,50 +115,19 @@ fun YearStatScreenContent(navController: NavHostController) {
     MainContent()
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MainContent() {
-    Column {
-        val density = LocalDensity.current.density
-        var year by remember {
-            mutableIntStateOf(1000)
-        }
-        Row(modifier = Modifier
-            .background(BackgroundColor)
-            .fillMaxWidth()
-            .height(40.dp)
-            .zIndex(1f)){
-            IconButton(onClick = {
-                year--
-            }) {
-                Icon(imageVector = Icons.Rounded.ArrowLeft, null)
-            }
-            Text(year.toString(), modifier= Modifier
-                .weight(1f)
-                .fillMaxWidth(), textAlign = TextAlign.Center)
-            IconButton(onClick = {
-                year++
-            }) {
-                Icon(imageVector = Icons.Rounded.ArrowRight, null)
-            }
-        }
-
-        Box(modifier = Modifier
-            .weight(1f)
-            .zIndex(0f)) {
-            LaunchedEffect(Unit){
-                delay(200)
-                year = CalendarUtil.getCurrentYear()
-            }
-            ZoomableCanvas(density = density, year = year)
-        }
-    }
-}
-
-@Composable
-fun ZoomableCanvas(density: Float, year: Int) {
+    val state = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = false
+    )
+    val scope = rememberCoroutineScope()
     val activityRecordViewModel: ActivityRecordViewModel = hiltViewModel()
     val activityViewModel: ActivityViewModel = hiltViewModel()
     val categoryViewModel: CategoryViewModel = hiltViewModel()
+
+    val categories = categoryViewModel.getCategories().collectAsState(initial = emptyList())
 
     val months = listOf(stringResource(R.string.january),
         stringResource(R.string.february),
@@ -114,6 +142,392 @@ fun ZoomableCanvas(density: Float, year: Int) {
         stringResource(R.string.november),
         stringResource(R.string.december)
     )
+
+    var year by remember {
+        mutableIntStateOf(1000)
+    }
+    ModalBottomSheetLayout(
+        scrimColor = Color.Unspecified,
+        sheetState = state,
+        sheetShape = RoundedCornerShape(10.dp, 10.dp, 0.dp, 0.dp),
+        sheetBackgroundColor = BackgroundSecondColor,
+        sheetContent = {
+            Box(
+                modifier = Modifier.background(BackgroundSecondColor))
+            {
+                val totalHours = (if (year % 4 == 0) 366 else 365) * 24f
+                val categoriesCountInYearList =
+                    activityRecordViewModel.getActivityRecordsCountListByCategoriesInYear(
+                        year
+                    ).collectAsState(
+                        initial = emptyList()
+                    )
+                LazyColumn(
+                    Modifier
+                        .padding(top = 40.dp)
+                        .padding(horizontal = 10.dp)) {
+                    item {
+                        val pieChartData = PieChartData(
+                            slices = categoriesCountInYearList.value.map { value ->
+                                PieChartData.Slice(
+                                    label = value.name + String.format(
+                                        " - %.1f",
+                                        (value.count / totalHours * 100f)
+                                    ) + "%",
+                                    color = Color(value.color.toColorInt()),
+                                    value = value.count.toFloat()
+                                )
+                            }.plus(
+                                PieChartData.Slice(
+                                    value = totalHours - categoriesCountInYearList.value.sumOf { it.count },
+                                    label = "N/A",
+                                    color = Color.Gray
+                                )
+                            ),
+                            plotType = PlotType.Donut
+                        )
+                        key(pieChartData.hashCode()) {
+                            val pieChartConfig =
+                                PieChartConfig(
+                                    labelVisible = true,
+                                    strokeWidth = 100f,
+                                    labelColor = Color.White,
+                                    inActiveSliceAlpha = .8f,
+                                    isEllipsizeEnabled = true,
+                                    labelTypeface = Typeface.defaultFromStyle(
+                                        Typeface.NORMAL
+                                    ),
+                                    isAnimationEnable = false,
+                                    chartPadding = 40,
+                                    labelFontSize = 30.sp,
+                                    backgroundColor = BackgroundSecondColor,
+                                    sliceLabelEllipsizeAt = TextUtils.TruncateAt.MIDDLE
+                                )
+                            Column(
+                                Modifier
+                                    .height(450.dp)
+                            ) {
+                                val legendsList = mutableListOf<LegendLabel>()
+                                pieChartData.slices.forEach { slice ->
+                                    legendsList.add(
+                                        LegendLabel(
+                                            slice.color,
+                                            slice.label
+                                        )
+                                    )
+                                }
+                                Legends(
+                                    legendsConfig = LegendsConfig(
+                                        legendLabelList = legendsList,
+                                        gridColumnCount = 3,
+                                        legendsArrangement = Arrangement.Start,
+                                        textStyle = PieChartLabelFont,
+                                        colorBoxSize = 15.dp,
+                                        textSize = 14.sp
+                                    )
+                                )
+                                DonutPieChart(
+                                    modifier = Modifier
+                                        .background(BackgroundSecondColor)
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    pieChartData,
+                                    pieChartConfig
+                                )
+                            }
+                        }
+                    }
+                    item{
+                        Text(
+                            text = stringResource(id = R.string.by_months),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 20.dp, start = 20.dp),
+                            color = MainColorSecondRed
+                        )
+                    }
+                    item {
+                        val categoriesCountInMonthList = mutableListOf<List<CategoryCount>>()
+                        val monthCount = if (year == CalendarUtil.getCurrentYear()) CalendarUtil.getCurrentMonth() else 11
+
+                        for (month in 0..monthCount) {
+                            categoriesCountInMonthList.add(
+                                activityRecordViewModel.getActivityRecordsCountListByCategoriesInMonth(
+                                    year,
+                                    month
+                                ).collectAsState(
+                                    initial = emptyList()
+                                ).value
+                            )
+                        }
+                        val data = HorizontalBarsData(
+                            bars = categoriesCountInMonthList.mapIndexed { idx, values ->
+                                val totalCount = 24f * CalendarUtil.getDaysInMonth(idx, year)
+                                val valuesCountSum = values.sumOf { it.count }.toFloat()
+                                StackedBarData(
+                                    title = AnnotatedString(months[idx]),
+                                    entries = values.mapIndexed { _, value ->
+                                        StackedBarEntry(
+                                            text = AnnotatedString(value.name),
+                                            value = value.count.toFloat(),
+                                            color = Color(value.color.toColorInt())
+                                        )
+                                    }.plus(
+                                        StackedBarEntry(
+                                            text = AnnotatedString("N/A"),
+                                            value = totalCount - valuesCountSum,
+                                            color = Color.Gray
+                                        )
+                                    )
+                                )
+                            }.reversed()
+                        )
+                        HorizontalBarsChart(
+                            modifier = Modifier.padding(
+                                vertical = 4.dp,
+                                horizontal = 4.dp
+                            ),
+                            data = data,
+                            legendOffset = 20.dp,
+                            legend = null,
+                            divider = {
+                                Divider(color = Color.LightGray)
+                            },
+                            textContent = {
+                                Text(it, style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold))
+                            },
+                            valueContent = {
+                                Text(it + AnnotatedString(" " + stringResource(id = R.string.hour_short)), style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium), color = Color.Red)
+                            }
+                        )
+
+                    }
+                    item {
+                        Text(
+                            text = stringResource(id = R.string.categories),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 20.dp, bottom=10.dp, start = 20.dp),
+                            color = MainColorSecondRed
+                        )
+                    }
+                    itemsIndexed(categoriesCountInYearList.value){ _, category ->
+                        var expanded by remember {
+                            mutableStateOf(false)
+                        }
+                        Card(
+                            modifier = Modifier.padding(
+                                vertical = 4.dp,
+                                horizontal = 4.dp
+                            ),
+                            backgroundColor = CardCategoryColorSecond,
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            CategoryCardContent(
+                                category,
+                                year,
+                                activityViewModel,
+                                activityRecordViewModel,
+                                expanded
+                            ) { expanded = !expanded }
+                        }
+                    }
+                }
+                Text(
+                    text = stringResource(id = R.string.information),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .padding(vertical = 4.dp)
+                        .align(Alignment.TopCenter)
+                        .background(BackgroundSecondColor),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }){
+        Column {
+            Row(
+                modifier = Modifier
+                    .background(BackgroundColor)
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .zIndex(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    year--
+                }) {
+                    Icon(imageVector = Icons.Rounded.ArrowLeft, null)
+                }
+                Text(
+                    year.toString(), modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(), textAlign = TextAlign.Center
+                )
+                IconButton(onClick = {
+                    year++
+                }) {
+                    Icon(imageVector = Icons.Rounded.ArrowRight, null)
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .zIndex(0f)
+            ) {
+                LaunchedEffect(Unit) {
+                    delay(200)
+                    year = CalendarUtil.getCurrentYear()
+                }
+                ZoomableCanvas(year, months, activityRecordViewModel, activityViewModel, categoryViewModel)
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .align(Alignment.BottomStart),
+                    contentColor = Color.White,
+                    backgroundColor = MainColorSecondRed,
+                    onClick = { scope.launch { state.show() } }
+                ) {
+                    Icon(imageVector = Icons.Outlined.PriorityHigh, contentDescription = null)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryCardContent(
+    category: CategoryCount,
+    year: Int,
+    activityViewModel: ActivityViewModel,
+    activityRecordViewModel: ActivityRecordViewModel,
+    expanded: Boolean,
+    onExpand: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clickable {
+                onExpand()
+            }
+            .padding(12.dp)
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+    ) {
+        Row {
+            Icon(
+                modifier = Modifier
+                    .size(45.dp)
+                    .align(Alignment.CenterVertically)
+                    .padding(10.dp),
+                imageVector = Icons.Rounded.Circle,
+                contentDescription = "Icon",
+                tint = Color(category.color.toColorInt())
+            )
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = category.name,
+                    modifier = Modifier
+                        .weight(1f),
+                    style = CategoryListItemFont2
+                )
+                val categoryHourCount = category.count
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .align(Alignment.CenterVertically),
+                    text = categoryHourCount.toString() + " " + stringResource(id = R.string.hour_short),
+                    style = CategoryListItemFont2Inner
+                )
+            }
+            IconButton(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                onClick = { onExpand() }) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = "Expand button"
+                )
+            }
+        }
+        if (expanded) {
+            val activities =
+                activityViewModel.getActivities(category.id)
+                    .collectAsState(initial = emptyList())
+            Column(modifier = Modifier.background(CardCategoryColorSecond)) {
+                activities.value.forEach { activity ->
+                    key(activity.hashCode()) {
+                        Card(
+                            elevation = 4.dp,
+                            modifier = Modifier
+                                .background(CardCategoryColorSecond)
+                                .padding(vertical = 4.dp, horizontal = 8.dp),
+                            shape = RoundedCornerShape(5.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .background(CardActivityColor)
+                                    .padding(horizontal = 6.dp, 4.dp)
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(35.dp)
+                                        .padding(vertical = 10.dp),
+                                    imageVector = Icons.Rounded.Circle,
+                                    contentDescription = "Icon",
+                                    tint = Color(category.color.toColorInt())
+                                )
+                                Text(
+                                    text = activity.name,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically)
+                                        .weight(1f),
+                                    style = ActivityListItemFont2
+                                )
+                                val activityHourCount =
+                                    activityRecordViewModel.getActivityRecordsCountByActivityInYear(
+                                        activity.id,
+                                        year
+                                    )
+                                Text(
+                                    modifier = Modifier
+                                        .padding(horizontal = 4.dp)
+                                        .align(Alignment.CenterVertically),
+                                    text = activityHourCount.toString() + " " + stringResource(id = R.string.hour_short),
+                                    style = CategoryListItemFont2Inner
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
+fun ZoomableCanvas(
+    year: Int,
+    months: List<String>,
+    activityRecordViewModel: ActivityRecordViewModel,
+    activityViewModel: ActivityViewModel,
+    categoryViewModel: CategoryViewModel
+) {
+    val density = LocalDensity.current.density
+
     val records =
         Array(12) {
             Array(31) {
@@ -140,15 +554,15 @@ fun ZoomableCanvas(density: Float, year: Int) {
             .fillMaxSize()
             .background(Color.Black)
             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, newRotation->
+                detectTransformGestures { _, pan, zoom, newRotation ->
                     val newScale = (scale * zoom).coerceIn(startScale, 1.5f)
                     val newOffsetX = (offsetX + pan.x).coerceIn(
                         -(newScale - startScale) * size.width,
                         (newScale - startScale) * size.width
                     )
                     val newOffsetY = (offsetY + pan.y).coerceIn(
-                        -(newScale - startScale) * size.height,
-                        (newScale - startScale) * size.height
+                        -(newScale - startScale) * size.height - size.height,
+                        (newScale - startScale) *size.height + size.height
                     )
                     //val normalizedRotation = if (rotation >= 0) rotation else rotation + 360
                     offsetX = newOffsetX

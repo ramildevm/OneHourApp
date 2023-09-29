@@ -48,12 +48,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowCircleUp
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.MoveUp
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.runtime.Composable
@@ -236,8 +240,8 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                         if (scaffoldState.isRevealed) {
                             IconButton(onClick = { scope.launch { scaffoldState.conceal() } }) {
                                 Icon(
-                                    Icons.Filled.Menu,
-                                    contentDescription = "Menu"
+                                    Icons.Filled.ExpandLess,
+                                    contentDescription = "Expand less"
                                 )
                             }
                         } else {

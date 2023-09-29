@@ -7,6 +7,7 @@ import androidx.room.Upsert
 import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
+import com.example.onehourapp.data.models.dto.CategoryCount
 import kotlinx.coroutines.flow.Flow
 import java.sql.Timestamp
 
@@ -28,6 +29,12 @@ interface ActivityRecordDao {
             "WHERE a.categoryId = :categoryId " +
             "AND ar.timestamp BETWEEN :startTimestamp AND :endTimeStamp")
     fun getActivityRecordsCountByCategoryId(categoryId: Int, startTimestamp: Long, endTimeStamp: Long): Int
+    @Query("SELECT c.id as id, c.name as name, c.color as color, COUNT(*) as count FROM ActivityRecord ar " +
+            "INNER JOIN Activity a ON ar.activityId = a.id " +
+            "INNER JOIN Category c ON c.id = a.categoryId " +
+            "WHERE ar.timestamp BETWEEN :startTimestamp AND :endTimeStamp " +
+            "GROUP BY a.categoryId ")
+    fun getActivityRecordsCountListByCategories(startTimestamp: Long, endTimeStamp: Long): Flow<List<CategoryCount>>
     @Upsert
     suspend fun insertActivityRecord(activityRecord: ActivityRecord)
 

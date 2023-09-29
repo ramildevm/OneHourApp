@@ -105,9 +105,9 @@ fun AddRecordDialog(
         var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
         var isAddActivity by remember { mutableStateOf(false) }
 
-
         var pickerEndValue by remember { mutableIntStateOf(hour) }
         var pickerStartValue by remember { mutableIntStateOf(if (pickerEndValue == 0) 23 else pickerEndValue - 1) }
+
 
         AlertDialog(
             backgroundColor = BackgroundColor,
@@ -153,8 +153,7 @@ fun AddRecordDialog(
                     val mDatePickerDialog = DatePickerDialog(
                         context,
                         { _, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-                            selectedDateMillis =
-                                CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
+                            selectedDateMillis = CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
                             mDate.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
                         },
                         mCalendar.get(Calendar.YEAR),
@@ -199,8 +198,7 @@ fun AddRecordDialog(
 //                                            Text("Populate")
 //                                        }
 
-                    val categories =
-                        categoryViewModel.allCategories.collectAsState(initial = emptyList())
+                    val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
                     var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
                         expanded = expanded,
@@ -337,50 +335,53 @@ fun AddRecordDialog(
                         )
                     } else
                         Spacer(modifier = Modifier.height(16.dp))
-                    val start =
-                        if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
-                    val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
-                    var sliderPosition by remember { mutableStateOf(start..end) }
-                    Box(Modifier.fillMaxWidth()) {
-                        Text(stringResource(id = R.string.time))
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color.White,
-                            text = "${sliderPosition.start.toInt()}  -  ${sliderPosition.endInclusive.toInt()}",
-                            textAlign = TextAlign.Center
+                    key(selectedDateMillis.hashCode()) {
+                        val start =
+                            if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
+                        val end =
+                            if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
+                        var sliderPosition by remember { mutableStateOf(start..end) }
+                        Box(Modifier.fillMaxWidth()) {
+                            Text(stringResource(id = R.string.time))
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color.White,
+                                text = "${sliderPosition.start.toInt()}  -  ${sliderPosition.endInclusive.toInt()}",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        RangeSlider(
+                            steps = end.toInt() - 1,
+                            value = sliderPosition,
+                            onValueChange = {
+                                sliderPosition = if (it.start < it.endInclusive)
+                                    it
+                                else
+                                    it.endInclusive - 1..it.endInclusive
+                                if (it.start == it.endInclusive && it.endInclusive == 0f)
+                                    sliderPosition = it.start..it.start + 1
+                            },
+                            valueRange = 0f..end,
+                            onValueChangeFinished = {
+                                pickerStartValue = sliderPosition.start.toInt()
+                                pickerEndValue = sliderPosition.endInclusive.toInt()
+                            }
                         )
+                        Row(Modifier.padding(horizontal = 4.dp)) {
+                            val step = when (end.toInt()) {
+                                in 0 until 12 -> 1
+                                in 12 until 18 -> 2
+                                in 18..24 -> 3
+                                else -> 1
+                            }
+                            for (i in 0..end.toInt() step step) {
+                                Text(String.format("%02d", i))
+                                if (i != end.toInt())
+                                    Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                        Spacer(modifier = Modifier.size(30.dp))
                     }
-                    RangeSlider(
-                        steps = end.toInt() - 1,
-                        value = sliderPosition,
-                        onValueChange = {
-                            sliderPosition = if (it.start < it.endInclusive)
-                                it
-                            else
-                                it.endInclusive - 1..it.endInclusive
-                            if (it.start == it.endInclusive && it.endInclusive == 0f)
-                                sliderPosition = it.start..it.start + 1
-                        },
-                        valueRange = 0f..end,
-                        onValueChangeFinished = {
-                            pickerStartValue = sliderPosition.start.toInt()
-                            pickerEndValue = sliderPosition.endInclusive.toInt()
-                        }
-                    )
-                    Row(Modifier.padding(horizontal = 4.dp)) {
-                        val step = when (end.toInt()) {
-                            in 0 until 12 -> 1
-                            in 12 until 18 -> 2
-                            in 18..24 -> 3
-                            else -> 1
-                        }
-                        for (i in 0..end.toInt() step step) {
-                            Text(String.format("%02d", i))
-                            if (i != end.toInt())
-                                Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                    Spacer(modifier = Modifier.size(30.dp))
                 }
             },
             confirmButton = {

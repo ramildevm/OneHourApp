@@ -25,10 +25,11 @@ class ActivityRecordViewModel @Inject constructor(
     fun getActivityRecordsCountByActivityId(activityId:Int) : Int {
          return repository.getActivityRecordsCountByActivity(activityId)
     }
-    fun getActivityRecordsCountByActivityInMonth(activityId:Int, year:Int, month:Int) : Int {
-         return repository.getActivityRecordsCountByActivityInMonth(activityId, year, month)
-    }
+    fun getActivityRecordsCountByActivityInMonth(activityId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByActivityInMonth(activityId, year, month)
+    fun getActivityRecordsCountByActivityInYear(activityId:Int, year:Int) = repository.getActivityRecordsCountByActivityInYear(activityId, year)
     fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByCategoryInMonth(categoryId,year,month)
+    fun getActivityRecordsCountListByCategoriesInMonth(year:Int, month:Int) = repository.getActivityRecordsCountListByCategoriesInMonth(year,month)
+    fun getActivityRecordsCountListByCategoriesInYear(year:Int) = repository.getActivityRecordsCountListByCategoriesInYear(year)
     fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year:Int, month:Int, day:Int) = repository.getActivityRecordsCountByCategoryInDay(categoryId,year,month, day)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 

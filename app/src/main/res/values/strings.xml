@@ -53,6 +53,7 @@
     <string name="color_is_not_selected">Select a color\n</string>
     <string name="add_activity">Add activity</string>
     <string name="category">Category</string>
+    <string name="categories">Categories:</string>
     <string name="adding_a_record">Adding a record</string>
     <string name="select_a_date">Select a date:</string>
     <string name="select_an_activity">Select an activity:</string>
@@ -71,4 +72,5 @@
     <string name="yesterday">Yesterday</string>
     <string name="general">General</string>
     <string name="by_days">By days</string>
+    <string name="by_months">By months:</string>
 </resources>

@@ -283,7 +283,7 @@ fun CategoryCardContent(
                 )
             )
     ) {
-        Row() {
+        Row {
             Icon(
                 modifier = Modifier
                     .size(45.dp)
