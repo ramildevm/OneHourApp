@@ -231,10 +231,11 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                 elevation = 0.dp,
                 backgroundColor = Color.Transparent
             ) {
-                Row(horizontalArrangement = Arrangement.Center) {
+                Box() {
                     Box(
                         Modifier
                             .padding(5.dp)
+                            .align(Alignment.CenterEnd)
                             .fillMaxHeight()
                     ) {
                         if (scaffoldState.isRevealed) {
@@ -255,8 +256,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     }
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
+                            .fillMaxSize()
                     ) {
                         Text(
                             modifier = Modifier
@@ -270,24 +270,6 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                 fontWeight = FontWeight.Bold
                             )
                         )
-                    }
-                    Box(
-                        Modifier
-                            .padding(5.dp)
-                            .fillMaxHeight()
-                    ) {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Filled.MoreHoriz,
-                                contentDescription = "DropDownMenu"
-                            )
-                        }
                     }
                 }
             }
@@ -445,7 +427,8 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     .padding(top = 80.dp)
                     .fillMaxWidth(),
                     state = tabPagerState, count = titles.size) { page->
-                    LazyColumn {
+                    LazyColumn(
+                        Modifier.fillMaxHeight().align(Alignment.TopCenter),) {
                         when (page) {
                             0 -> {
                                 val loadedCategories = loadedCategoriesCount[month]

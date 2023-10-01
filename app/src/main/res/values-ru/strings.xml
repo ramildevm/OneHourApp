@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">OneHourApp</string>
     <string name="get_start">Начнем</string>
-    <string name="slogan">Сделай свою жизнь упорядоченным!</string>
+    <string name="slogan">Сделай свою жизнь упорядоченной!</string>
     <string name="january">Январь</string>
     <string name="february">Февраль</string>
     <string name="march">Март</string>
