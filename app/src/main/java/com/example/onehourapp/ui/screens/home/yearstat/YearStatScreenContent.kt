@@ -1,4 +1,6 @@
 package com.example.onehourapp.ui.screens.home.yearstat
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.graphics.Typeface
 import android.text.TextUtils
 import androidx.compose.animation.animateContentSize
@@ -63,6 +65,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -126,8 +129,6 @@ fun MainContent() {
     val activityRecordViewModel: ActivityRecordViewModel = hiltViewModel()
     val activityViewModel: ActivityViewModel = hiltViewModel()
     val categoryViewModel: CategoryViewModel = hiltViewModel()
-
-    val categories = categoryViewModel.getCategories().collectAsState(initial = emptyList())
 
     val months = listOf(stringResource(R.string.january),
         stringResource(R.string.february),
@@ -626,12 +627,12 @@ fun ZoomableCanvas(
                 )
             }
             canvas.rotate(-92.2f)
-            for(hour in 0..23){
+            for(hour in 23 downTo  0){
                 canvas.nativeCanvas.drawTextOnPath(
                     String.format("-%02d-", hour),
                     path,
                     0f,
-                    -getYOffset(hour).toFloat(),
+                    -getYOffset(23-hour).toFloat(),
                     hourPaint
                 )
             }
@@ -641,7 +642,7 @@ fun ZoomableCanvas(
                     months[text_index],
                     path,
                     0f,
-                    -yOffset.toFloat(),
+                    -getYOffset(28).toFloat(),
                     paint
                 )
                 canvas.rotate(30f)

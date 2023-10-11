@@ -1,6 +1,7 @@
 package com.example.onehourapp.ui.screens.home
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -72,13 +73,17 @@ fun AddRecordDialog(
     }
     if (userSettings != null) {
         val actualDate by remember {
-            mutableLongStateOf(
-                if (userSettings!!.lastAddedDate != 0L)
-                    userSettings!!.lastAddedDate
-                else {
-                    date - if (hour == 0) 86400000L else 0L
-                }
-            )
+            when(callerType){
+                AddCallerType.HOME_SCREEN ->
+                    mutableLongStateOf(
+                        if (userSettings!!.lastAddedDate != 0L)
+                            userSettings!!.lastAddedDate
+                        else {
+                            date - if (hour == 0) 86400000L else 0L
+                        }
+                    )
+                AddCallerType.NOTIFICATION -> mutableLongStateOf(date)
+            }
         }
         val mCalendar by remember { mutableStateOf(Calendar.getInstance()) }
         mCalendar.timeInMillis = actualDate
@@ -161,7 +166,7 @@ fun AddRecordDialog(
                         mCalendar.get(Calendar.DAY_OF_MONTH)
                     )
                     mDatePickerDialog.datePicker.maxDate = when (callerType) {
-                        AddCallerType.HOME_SCREEN -> if (hour == 0) selectedDateMillis else System.currentTimeMillis() + 1000L
+                        AddCallerType.HOME_SCREEN ->  System.currentTimeMillis() + if(hour!=0) 1000L else -(60*60*1000*24)
                         AddCallerType.NOTIFICATION -> selectedDateMillis + 1000L
                     }
                     Box {
@@ -170,13 +175,14 @@ fun AddRecordDialog(
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {
-                                IconButton(onClick = { mDatePickerDialog.show() }) {
-                                    Icon(
-                                        imageVector = Icons.Default.CalendarMonth,
-                                        tint = MainColorSecondRed,
-                                        contentDescription = null
-                                    )
-                                }
+                                if(callerType == AddCallerType.HOME_SCREEN)
+                                    IconButton(onClick = { mDatePickerDialog.show() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarMonth,
+                                            tint = MainColorSecondRed,
+                                            contentDescription = null
+                                        )
+                                    }
                             })
                     }
 
@@ -192,7 +198,7 @@ fun AddRecordDialog(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-
+//
 //                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
 //                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
 //                                            Text("Populate")
@@ -338,8 +344,7 @@ fun AddRecordDialog(
                     key(selectedDateMillis.hashCode()) {
                         val start =
                             if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
-                        val end =
-                            if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
+                        val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
                         var sliderPosition by remember { mutableStateOf(start..end) }
                         Box(Modifier.fillMaxWidth()) {
                             Text(stringResource(id = R.string.time))
@@ -446,26 +451,400 @@ fun AddRecordDialog(
     }
 }
 
+fun createActivityRecord3(
+    activities: State<List<Activity>>,
+    activityRecordViewModel: ActivityRecordViewModel
+) {
+    val startDate = Calendar.getInstance()
+    startDate.timeInMillis = CalendarUtil.getMonthStartMillis(2022, 0)
+    val endDate = Calendar.getInstance()
+    endDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023, 0)
+    //var id = activities.value[kotlin.random.Random.nextInt(activities.value.size - 1)]
+    var day = 0
+    for (timestamp in startDate.timeInMillis until endDate.timeInMillis step 60 * 60 * 1000 * 24) {
+        //Log.e("Inserted", "day: $day -----------------")
+        day++
+        var hour = 0
+        val h1 = kotlin.random.Random.nextInt(5,8)
+        val h2 = kotlin.random.Random.nextInt(0,2)
+        val h3 = kotlin.random.Random.nextInt(6,9)
+        val h4 = kotlin.random.Random.nextInt(2,4)
+        val h5 = kotlin.random.Random.nextInt(1,3)
+        val h6 = kotlin.random.Random.nextInt(1,3)
+        var hourList = listOf<Int>(
+            h1, //7 slee
+            h2, //1 excer
+            h3, //8 work
+            h4, //3 famil
+            h5, //2 otd
+            h6, //2 read
+        )
+        for(i in 0 until hourList[0]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 1, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until hourList[1]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 7, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until hourList[2]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 9, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until hourList[3]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 5, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until hourList[4]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 3, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until hourList[5]){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 6, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        for(i in 0 until (23 - hourList.sum())){
+            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 8, hour * 60 * 60 * 1000 + timestamp), hour, day)
+            hour ++
+        }
+        activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 1, hour * 60 * 60 * 1000 + timestamp), hour, day)
+
+
+    }
+}
+fun createActivityRecord4(
+    activities: State<List<Activity>>,
+    activityRecordViewModel: ActivityRecordViewModel
+) {
+    val startDate = Calendar.getInstance()
+    startDate.timeInMillis = CalendarUtil.getMonthStartMillis(2022, 0)
+    val endDate = Calendar.getInstance()
+    endDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023, 0)
+    //var id = activities.value[kotlin.random.Random.nextInt(activities.value.size - 1)]
+    var day = 0
+//    for (timestamp in startDate.timeInMillis until endDate.timeInMillis step 60 * 60 * 1000 * 24) {
+//        if(kotlin.random.Random.nextBoolean())
+//            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 2, 21 * 60 * 60 * 1000 + timestamp))
+//        if(kotlin.random.Random.nextBoolean())
+//            activityRecordViewModel.insertActivityRecord(ActivityRecord(0, 2, 20 * 60 * 60 * 1000 + timestamp))
+//
+//    }
+    for (timestamp2 in startDate.timeInMillis until endDate.timeInMillis step 60 * 60 * 1000 * 24 * 7) {
+        for(i in 0..1) {
+            val timestamp = timestamp2 + (60 * 60 * 1000 * 24 * i)
+            var hour = 0
+            if (i == 1) {
+                val h1 = kotlin.random.Random.nextInt(7, 10)
+                val h2 = 1
+                val h3 = kotlin.random.Random.nextInt(4, 6)
+                val h4 = kotlin.random.Random.nextInt(3, 6)
+                val h5 = kotlin.random.Random.nextInt(1, 4)
+                val hourList = listOf<Int>(
+                    h1, //9 slee
+                    h2, //1 excer
+                    h3, //5 family
+                    h4, //5 otd
+                    h5, //3 read
+                )
+                for (k in 0 until hourList[0]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            1,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (k in 0 until hourList[1]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            7,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[2]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            5,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[3]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            3,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[4]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            6,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until (23 - hourList.sum())) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            8,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                if (kotlin.random.Random.nextBoolean())
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            1,
+                            22 * 60 * 60 * 1000 + timestamp
+                        )
+                    )
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        1,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+            }
+            else{
+                val h1 = kotlin.random.Random.nextInt(7, 9)
+                val h2 = 1
+                val h3 = kotlin.random.Random.nextInt(3, 5)
+                val h4 = kotlin.random.Random.nextInt(5, 8)
+                val h5 = 2
+                val h6 = 1
+                var hourList = listOf<Int>(
+                    h1, //8 slee
+                    h2, //1 excer
+                    h3, //4 family
+                    h4, //7 friends
+                    h5, //2 otd
+                    h5, //1 read
+                    h6
+                )
+                for (i in 0 until hourList[0]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            1,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[1]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            7,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[2]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            5,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[3]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            4,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[4]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            3,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until hourList[5]) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            6,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                for (i in 0 until (23 - hourList.sum())) {
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            3,
+                            hour * 60 * 60 * 1000 + timestamp
+                        ), hour, day
+                    )
+                    hour++
+                }
+                if (kotlin.random.Random.nextBoolean())
+                    activityRecordViewModel.insertActivityRecord(
+                        ActivityRecord(
+                            0,
+                            1,
+                            22 * 60 * 60 * 1000 + timestamp
+                        )
+                    )
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        1,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+            }
+        }
+    }
+}
 fun createActivityRecord2(
     activities: State<List<Activity>>,
     activityRecordViewModel: ActivityRecordViewModel
 ) {
     val startDate = Calendar.getInstance()
-    startDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023, 0)
+    startDate.timeInMillis = CalendarUtil.getMonthStartMillis(2022, 4)
     val endDate = Calendar.getInstance()
-    endDate.timeInMillis = CalendarUtil.getMonthStartMillis(2023, 8)
-    var timer = 0
-    var id = activities.value[kotlin.random.Random.nextInt(activities.value.size - 1)]
-    for (timestamp in startDate.timeInMillis until endDate.timeInMillis step 60 * 60 * 1000) {
-        if (timer < kotlin.random.Random.nextInt(7, 11)) {
-            if (kotlin.random.Random.nextInt(7) != 6)
-                activityRecordViewModel.insertActivityRecord(ActivityRecord(0, id.id, timestamp))
-        } else {
-            id = activities.value[kotlin.random.Random.nextInt(activities.value.size - 1)]
-            timer = 0
+    endDate.timeInMillis = CalendarUtil.getMonthStartMillis(2022, 5)
+    //var id = activities.value[kotlin.random.Random.nextInt(activities.value.size - 1)]
+    var day = 0
+    for (timestamp in startDate.timeInMillis until endDate.timeInMillis step 60 * 60 * 1000 * 24) {
+        day++
+        if(day in 1..8) {
+            var hour = 0
+            val h1 = kotlin.random.Random.nextInt(7, 9)
+            val h2 = 1
+            val h3 = kotlin.random.Random.nextInt(2, 3)
+            val h4 = kotlin.random.Random.nextInt(5, 10)
+            val h5 = 2
+            val h6 = 1
+            var hourList = listOf<Int>(
+                h1, //8 slee
+                h2, //1 excer
+                h3, //4 family
+                h4, //7 friends
+                h5, //2 otd
+                h5, //1 read
+                h6
+            )
+            for (i in 0 until hourList[0]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        1,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until hourList[1]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        7,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until hourList[2]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        5,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until hourList[3]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        4,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until hourList[4]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        3,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until hourList[5]) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        6,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            for (i in 0 until (23 - hourList.sum())) {
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        3,
+                        hour * 60 * 60 * 1000 + timestamp
+                    ), hour, day
+                )
+                hour++
+            }
+            if (kotlin.random.Random.nextBoolean())
+                activityRecordViewModel.insertActivityRecord(
+                    ActivityRecord(
+                        0,
+                        1,
+                        22 * 60 * 60 * 1000 + timestamp
+                    )
+                )
+            activityRecordViewModel.insertActivityRecord(
+                ActivityRecord(
+                    0,
+                    1,
+                    hour * 60 * 60 * 1000 + timestamp
+                ), hour, day
+            )
         }
-        timer++
     }
+
+
 }
 
 fun createActivityRecord(
@@ -500,11 +879,5 @@ fun createActivityRecord(
             )
         )
     }
-    userSettingsViewModel.updateUserSettingsAfterRecordAdd(
-        UserSettings(
-            0,
-            selectedActivityId,
-            selectedDateMillis
-        )
-    )
+    userSettingsViewModel.updateUserSettingsAddingData(selectedActivityId, selectedDateMillis)
 }

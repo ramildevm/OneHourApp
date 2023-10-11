@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OneHourApp</string>
+    <string name="app_name">OneHour</string>
     <string name="get_start">Начнем</string>
     <string name="slogan">Сделай свою жизнь упорядоченной!</string>
     <string name="january">Январь</string>
@@ -74,4 +74,8 @@
     <string name="general">Общая</string>
     <string name="by_days">По дням</string>
     <string name="by_months">По месяцам:</string>
+    <string name="edit">Изменить</string>
+    <string name="enable_notifications">Включить уведомления:</string>
+    <string name="start_hour">Время начала:</string>
+    <string name="end_hour">Время окончания:</string>
 </resources>

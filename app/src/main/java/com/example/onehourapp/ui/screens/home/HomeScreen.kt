@@ -2,6 +2,10 @@ package com.example.onehourapp.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -11,25 +15,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.onehourapp.R
 import com.example.onehourapp.ui.graphs.HomeNavGraph
 import com.example.onehourapp.ui.screens.AddButtonScreen
 import com.example.onehourapp.ui.screens.BottomBarScreen
@@ -46,9 +58,35 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(navController: NavHostController = rememberNavController()) {
     var isAddBtnClicked by remember { mutableStateOf(false) }
-    var isChanged = remember { mutableStateOf(-1) }
+    val isChanged = remember { mutableIntStateOf(-1) }
     Scaffold(
-        bottomBar = { BottomBar(navController = navController) { isAddBtnClicked = true } }
+        floatingActionButtonPosition = FabPosition.Center,
+        isFloatingActionButtonDocked = true,
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier
+                    .offset(y = 15.dp)
+                    .size(65.dp),
+                elevation= FloatingActionButtonDefaults.elevation(15.dp),
+                onClick = { isAddBtnClicked = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Circle,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Icon(
+                    painter = painterResource(R.drawable.add_circle_icon),
+                    tint = Color.Red,
+                    contentDescription = "Добавить"
+                )
+            }
+        },
+        bottomBar = {
+            BottomBar(navController = navController) {
+                isAddBtnClicked = true
+            }
+        }
     ) {innerPadding->
         if(isAddBtnClicked)
             AddRecordDialog (
@@ -56,12 +94,13 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
                 hour = CalendarUtil.getCurrentHour(),
                 AddCallerType.HOME_SCREEN,
                 onDismiss = {isAddBtnClicked = false},
-                notifyChange = {month:Int -> isChanged.value = month}
+                notifyChange = {month:Int -> isChanged.intValue = month}
             )
-        Box(modifier = Modifier.padding(innerPadding)){
-            HomeNavGraph(navController = navController, isChanged = isChanged)
-        }
+            Box(modifier = Modifier.padding(innerPadding)) {
+                HomeNavGraph(navController = navController, isChanged = isChanged)
+            }
     }
+
 }
 
 @Composable
@@ -86,10 +125,10 @@ fun BottomBar(navController: NavHostController, onClick: () -> Unit, ) {
                 AddItem(
                     screen = screen,
                     currentDestination = currentDestination,
-                    navController = navController,
-                    onAddBtnClick = onClick
+                    navController = navController
                 )
             }
+
         }
     }
 }
@@ -99,66 +138,55 @@ fun BottomBar(navController: NavHostController, onClick: () -> Unit, ) {
 fun RowScope.AddItem(
     screen: BottomBarScreen,
     currentDestination: NavDestination?,
-    navController: NavHostController,
-    onAddBtnClick: () -> Unit
+    navController: NavHostController
 )
  {
      val isAddScreen = screen is AddButtonScreen
-
+    val isSelected = currentDestination?.hierarchy?.any {
+        it.route == screen.route
+    } == true
     BottomNavigationItem(
         label = {
-            var fontStyle = BottomBarLabelFontEn
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val currentLocale = LocalConfiguration.current.locales[0]
-                fontStyle = if (currentLocale.language == "ru") {
-                    BottomBarLabelFontRu
-                } else {
-                    BottomBarLabelFontEn
-                }
+            var fontStyle: TextStyle
+            val currentLocale = LocalConfiguration.current.locales[0]
+            fontStyle = if (currentLocale.language == "ru") {
+                BottomBarLabelFontRu
+            } else {
+                BottomBarLabelFontEn
             }
             if(!isAddScreen)
                 Text(text = stringResource(id = screen.title), style = fontStyle,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = (0).dp))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = (0).dp))
             else
                 Spacer(modifier = Modifier.height(0.dp))
         },
         icon = {
             val modifier = Modifier.size(30.dp)
-            val addScreenModifier = Modifier
-                .offset(y = 5.dp)
-                .fillMaxSize()
-                .align(Alignment.Bottom)
-            if(isAddScreen)
-            Icon (modifier = addScreenModifier ,
-                imageVector = Icons.Rounded.Circle,
-                contentDescription =null,
-                tint = Color.White )
+            if(!isAddScreen)
             Icon(
-                modifier = if(isAddScreen) addScreenModifier else modifier,
+                modifier = modifier,
                 painter = screen.icon.asPainterResource(),
                 contentDescription = "Navigation Icon",
             )
 
         },
-        alwaysShowLabel = !isAddScreen,
-        selected = currentDestination?.hierarchy?.any {
-            it.route == screen.route
-        } == true,
+        alwaysShowLabel = false,
+        selected = isSelected,
         selectedContentColor = if(isAddScreen) BottomBarAddColor else MainColorSecondRed,
         unselectedContentColor = if(isAddScreen) BottomBarAddColor else Color.White,
         onClick = {
-            if(isAddScreen)
-                onAddBtnClick()
-            else
-            navController.navigate(screen.route) {
-                navController.graph.startDestinationRoute?.let { screen_route ->
-                    popUpTo(screen_route) {
-                        saveState = true
+            if(!isAddScreen)
+                navController.navigate(screen.route) {
+                    navController.graph.startDestinationRoute?.let { screen_route ->
+                        popUpTo(screen_route) {
+                            saveState = true
+                        }
                     }
+                    launchSingleTop = true
+                    restoreState = true
                 }
-                launchSingleTop = true
-                restoreState = true
-            }
         }
     )
 }

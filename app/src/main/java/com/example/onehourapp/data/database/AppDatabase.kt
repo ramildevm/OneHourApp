@@ -21,7 +21,7 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 @Database(
-    version = 2,
+    version = 3,
     entities = [Category::class, Activity::class, ActivityRecord::class, UserSettings::class],
     exportSchema = false
 )
@@ -64,7 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
                 activityDao.insertActivity(Activity(8,  applicationContext.getString(R.string.production), 8))
                 activityDao.insertActivity(Activity(9,  applicationContext.getString(R.string.work), 9))
 
-                settingsDao.insertUpdateUserSettings(UserSettings(0,1,0L,0,8))
+                settingsDao.insertUpdateUserSettings(UserSettings(0,1,0L,0,8, false))
             }
         }
     }

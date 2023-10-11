@@ -16,25 +16,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.onehourapp.receivers.currentTime
 import com.example.onehourapp.ui.screens.home.AddCallerType
 import com.example.onehourapp.ui.screens.home.AddRecordDialog
 import com.example.onehourapp.ui.theme.OneHourAppTheme
 import com.example.onehourapp.utils.CalendarUtil
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 
-
+@AndroidEntryPoint
 class AddRecordDialogActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val hour = intent.extras?.getInt("hour",CalendarUtil.getCurrentHour())
-        val day = intent.extras?.getInt("day",CalendarUtil.getCurrentDay())
+        val currentTime = intent.extras?.getLong(currentTime,0L)
+        val day = if(currentTime != null) CalendarUtil.getCurrentDayMillis(currentTime) else CalendarUtil.getCurrentDayMillis()
+        val hour = CalendarUtil.getCurrentHour(currentTime?:0L)
         setContent {
-            OneHourAppTheme {
+            OneHourAppTheme(darkTheme = true) {
                 var showDialog by remember { mutableStateOf(true) }
                 if (showDialog)
                 AddRecordDialog (
-                    date = CalendarUtil.getCurrentDayMillis(),
-                    hour = hour!!,
+                    date = day,
+                    hour = hour,
                     AddCallerType.NOTIFICATION,
                     onDismiss = {showDialog = false},
                     notifyChange = {}

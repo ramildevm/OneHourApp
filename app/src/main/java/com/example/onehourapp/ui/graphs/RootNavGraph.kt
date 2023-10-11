@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.onehourapp.data.preferences.SharedPreferencesKeys
 import com.example.onehourapp.ui.screens.home.HomeScreen
 import com.example.onehourapp.utils.SharedPreferencesUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
     val context = LocalContext.current
-    val authStatus = SharedPreferencesUtil.getSharedStringData(context,"auth_status")
+    val authStatus = SharedPreferencesUtil.getSharedStringData(context, SharedPreferencesKeys.PREF_AUTH_STATUS)
 
     NavHost(
         navController = navController,

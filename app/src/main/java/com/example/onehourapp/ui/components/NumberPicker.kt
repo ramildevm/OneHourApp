@@ -18,6 +18,7 @@ fun NumberPicker(
     dividersColor: Color = MaterialTheme.colors.primary,
     range: Iterable<Int>,
     textStyle: TextStyle = LocalTextStyle.current,
+    enabled:Boolean = true
 ) {
     HorizontalListItemPicker(
         modifier = modifier,
@@ -26,6 +27,7 @@ fun NumberPicker(
         onValueChange = onValueChange,
         dividersColor = dividersColor,
         list = range.toList(),
-        textStyle = textStyle
+        textStyle = textStyle,
+        enabled = enabled
     )
 }

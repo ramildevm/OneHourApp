@@ -31,7 +31,6 @@ fun HomeNavGraph(navController: NavHostController, isChanged: MutableState<Int>)
         route = Graph.HOME,
         startDestination = BottomBarScreen.Calendar.route
     ) {
-
         composable(route = BottomBarScreen.YearStat.route) {
             YearStatScreenContent(navController)
         }

@@ -45,8 +45,10 @@ object CalendarUtil {
         return currentDate.get(Calendar.DAY_OF_MONTH)
     }
 
-    fun getCurrentDayMillis(): Long {
+    fun getCurrentDayMillis(timestamp: Long = 0L): Long {
         val currentDate = Calendar.getInstance()
+        if(timestamp!=0L)
+            currentDate.timeInMillis = timestamp
         currentDate.set(Calendar.HOUR_OF_DAY, 0)
         currentDate.set(Calendar.MINUTE, 0)
         currentDate.set(Calendar.SECOND, 0)
@@ -58,6 +60,13 @@ object CalendarUtil {
         if(timestamp != 0L)
             currentDate.timeInMillis = timestamp
         return currentDate.get(Calendar.HOUR_OF_DAY)
+    }
+    fun getCurrentHourMillis(): Long {
+        val currentDate = Calendar.getInstance()
+        currentDate.set(Calendar.MINUTE, 0)
+        currentDate.set(Calendar.SECOND, 0)
+        currentDate.set(Calendar.MILLISECOND, 0)
+        return currentDate.timeInMillis
     }
     fun getYearStartMillis(year: Int): Long {
         val calendar = Calendar.getInstance()

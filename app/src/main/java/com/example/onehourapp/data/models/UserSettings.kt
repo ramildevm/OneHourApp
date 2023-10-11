@@ -17,5 +17,6 @@ data class UserSettings(
     val lastAddedActivityId:Int=0,
     val lastAddedDate:Long=0L,
     val sleepActivityStartHour:Int=0,
-    val sleepActivityEndHour:Int=0
+    val sleepActivityEndHour:Int=0,
+    val isNotificationsEnable:Boolean=true
 )

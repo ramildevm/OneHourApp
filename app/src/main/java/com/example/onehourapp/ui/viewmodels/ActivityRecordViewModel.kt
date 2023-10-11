@@ -1,18 +1,13 @@
 package com.example.onehourapp.ui.viewmodels
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.MutableIntState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.repositories.ActivityRecordRepository
-import com.example.onehourapp.data.repositories.ActivityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import java.time.Month
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,15 +22,16 @@ class ActivityRecordViewModel @Inject constructor(
     }
     fun getActivityRecordsCountByActivityInMonth(activityId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByActivityInMonth(activityId, year, month)
     fun getActivityRecordsCountByActivityInYear(activityId:Int, year:Int) = repository.getActivityRecordsCountByActivityInYear(activityId, year)
-    fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year:Int, month:Int) = repository.getActivityRecordsCountByCategoryInMonth(categoryId,year,month)
+    fun getActivityRecordsCountByCategoryInMonth(categoryId:Int, year: Int, month:Int) = repository.getActivityRecordsCountByCategoryInMonth(categoryId,year,month)
     fun getActivityRecordsCountListByCategoriesInMonth(year:Int, month:Int) = repository.getActivityRecordsCountListByCategoriesInMonth(year,month)
     fun getActivityRecordsCountListByCategoriesInYear(year:Int) = repository.getActivityRecordsCountListByCategoriesInYear(year)
     fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year:Int, month:Int, day:Int) = repository.getActivityRecordsCountByCategoryInDay(categoryId,year,month, day)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 
-    fun insertActivityRecord(activityRecord: ActivityRecord){
+    fun insertActivityRecord(activityRecord: ActivityRecord, hour:Int=0, day:Int=0){
         viewModelScope.launch{
             repository.insertOrUpdateActivityRecord(activityRecord)
+            Log.e("Inserted", "day:$day hour: $hour activity: ${activityRecord.activityId} time = ${activityRecord.timestamp / (60*60*1000)}")
         }
     }
     fun updateActivityRecord(activityRecord: ActivityRecord){

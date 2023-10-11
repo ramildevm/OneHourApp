@@ -2,8 +2,6 @@ package com.example.onehourapp.ui.screens.home.calendar
 
 import android.graphics.Typeface
 import android.text.TextUtils
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -28,19 +26,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BackdropScaffold
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.Snackbar
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.TabRowDefaults
@@ -48,20 +45,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowCircleUp
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.MoveUp
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,6 +65,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,12 +76,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
@@ -109,10 +99,10 @@ import co.yml.charts.ui.barchart.models.BarStyle
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
-import co.yml.charts.ui.piechart.utils.proportion
 import com.example.onehourapp.R
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
+import com.example.onehourapp.ui.components.ClockProgressIndicator
 import com.example.onehourapp.ui.helpers.pagerFanTransition
 import com.example.onehourapp.ui.theme.ActivityListItemFont2
 import com.example.onehourapp.ui.theme.BackgroundColor
@@ -184,23 +174,23 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
         return@rememberPagerState Int.MAX_VALUE
     }
 
+    var previousPageStart by remember {
+        mutableIntStateOf((Int.MAX_VALUE / 2).toInt() - 3)
+    }
+
     val categoryViewModel: CategoryViewModel = hiltViewModel()
     val activityViewModel: ActivityViewModel = hiltViewModel()
     val activityRecordViewModel: ActivityRecordViewModel = hiltViewModel()
     val textMeasurer = rememberTextMeasurer()
 
-    var year by remember {
-        mutableIntStateOf(1000)
+    val year = remember {
+        mutableIntStateOf(CalendarUtil.getCurrentYear())
     }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             delay(2000)
             isLoaded = true
         }
-    }
-    LaunchedEffect(Unit) {
-        delay(200)
-        year = CalendarUtil.getCurrentYear()
     }
     val loadedData = remember {
         mutableStateMapOf<Int, List<ActivityRecordView>>()
@@ -231,11 +221,10 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                 elevation = 0.dp,
                 backgroundColor = Color.Transparent
             ) {
-                Box() {
+                Row {
                     Box(
                         Modifier
                             .padding(5.dp)
-                            .align(Alignment.CenterEnd)
                             .fillMaxHeight()
                     ) {
                         if (scaffoldState.isRevealed) {
@@ -256,7 +245,8 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     }
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxHeight()
+                            .weight(1f)
                     ) {
                         Text(
                             modifier = Modifier
@@ -264,17 +254,140 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                 .align(Alignment.Center),
                             textAlign = TextAlign.Center,
                             color = Color.Red,
-                            text = months[pagerState.currentPage % 12],
+                            text = months[pagerState.currentPage % 12] + " ${year.intValue}",
                             style = MainFont.copy(
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                     }
+                    Box(
+                        Modifier
+                            .padding(5.dp)
+                            .fillMaxHeight()
+                    ) {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = {
+                            expanded = !expanded
+                        }) {
+                            Icon(
+                                Icons.Filled.MoreHoriz,
+                                contentDescription = "More"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(onClick = {
+                                //TODO: Color canvas
+                            }) {
+                                Text(stringResource(id = R.string.edit))
+                            }
+                        }
+                    }
                 }
             }
         },
         backLayerContent = {
+            LaunchedEffect(key1 = pagerState){
+                snapshotFlow { pagerState.currentPage }.collect { page ->
+                    when(page%12){
+                        0 -> {
+                            if (page - previousPageStart == 12) {
+                                previousPageStart = page
+                                year.intValue++
+                                updateLoadedData(
+                                    loadedData,
+                                    year,
+                                    12,
+                                    activityRecordViewModel,
+                                    activityViewModel,
+                                    categoryViewModel
+                                )
+                                updateLoadedCategoriesCountList(
+                                    loadedCategoriesCount,
+                                    year,
+                                    12,
+                                    activityRecordViewModel,
+                                    categoryViewModel
+                                )
+                            }
+                        }
+                        1->{
+                            val previousYear = mutableIntStateOf(year.intValue-1)
+                            updateLoadedData(
+                                loadedData,
+                                previousYear,
+                                11,
+                                activityRecordViewModel,
+                                activityViewModel,
+                                categoryViewModel
+                            )
+                            updateLoadedCategoriesCountList(
+                                loadedCategoriesCount,
+                                previousYear,
+                                11,
+                                activityRecordViewModel,
+                                categoryViewModel
+                            )
+                        }
+                        2->{
+                            loadedData.remove(11)
+                            loadedCategoriesCount.remove(11)
+                        }
+                        9->{
+                            loadedData.remove(0)
+                            loadedCategoriesCount.remove(0)
+                        }
+                        10->{
+                            val nextYear = mutableIntStateOf(year.intValue+1)
+                            updateLoadedData(
+                                loadedData,
+                                nextYear,
+                                0,
+                                activityRecordViewModel,
+                                activityViewModel,
+                                categoryViewModel
+                            )
+                            updateLoadedCategoriesCountList(
+                                loadedCategoriesCount,
+                                nextYear,
+                                0,
+                                activityRecordViewModel,
+                                categoryViewModel
+                            )
+                        }
+                        11->{
+                            if (previousPageStart - page== 1) {
+                                previousPageStart = page - 11
+                                year.intValue--
+                                updateLoadedData(
+                                    loadedData,
+                                    year,
+                                    -1,
+                                    activityRecordViewModel,
+                                    activityViewModel,
+                                    categoryViewModel
+                                )
+                                updateLoadedCategoriesCountList(
+                                    loadedCategoriesCount,
+                                    year,
+                                    -1,
+                                    activityRecordViewModel,
+                                    categoryViewModel
+                                )
+                            }
+                        }
+
+                    }
+                    if (page%12 == 0) {
+
+                    } else if (page % 12 == 11) {
+
+                    }
+                }
+            }
             HorizontalPager(
                 state = pagerState,
                 beyondBoundsPageCount = 2,
@@ -289,7 +402,8 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     if (loadedData[pageIndex % 12] == null)
                         updateLoadedData(
                             loadedData,
-                            pageIndex,
+                            year,
+                            pageIndex%12,
                             activityRecordViewModel,
                             activityViewModel,
                             categoryViewModel
@@ -300,7 +414,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                 val count =
                                     activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
                                         category.id,
-                                        year,
+                                        year.value,
                                         pageIndex % 12,
                                     )
                                 RecordCountCategory(category, count)
@@ -311,6 +425,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     LaunchedEffect(key1 = Unit) {
                         updateLoadedData(
                             loadedData,
+                            year,
                             changedMonth.value,
                             activityRecordViewModel,
                             activityViewModel,
@@ -330,7 +445,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                 }
                 val item = loadedData[pageIndex % 12]
                 if (item == null)
-                    CircularProgressIndicator()
+                    ClockProgressIndicator(item==null)
                 else
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -342,7 +457,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                         val columns =
                             CalendarUtil.getDaysInMonth(
                                 pageIndex % 12,
-                                CalendarUtil.getCurrentYear()
+                                year.value
                             )
                         val rows = 25
                         val spacing = 5.dp
@@ -359,9 +474,8 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             for (row in 0 until rows) {
                                 for (column in 0 until columns) {
                                     val day = column + 1
-                                    val isCurrentDay =
-                                        (day == CalendarUtil.getCurrentDay() && isCurrentMonth)
-                                    var x = column * (cellSize + 5)
+                                    val isCurrentDay = (day == CalendarUtil.getCurrentDay() && isCurrentMonth)
+                                    val x = column * (cellSize + 5)
                                     var y = row * (cellSize + 5)
                                     val center = (columns - 1) / 2
                                     var offset = 0
@@ -428,7 +542,9 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                     .fillMaxWidth(),
                     state = tabPagerState, count = titles.size) { page->
                     LazyColumn(
-                        Modifier.fillMaxHeight().align(Alignment.TopCenter),) {
+                        Modifier
+                            .fillMaxHeight()
+                            .align(Alignment.TopCenter),) {
                         when (page) {
                             0 -> {
                                 val loadedCategories = loadedCategoriesCount[month]
@@ -440,8 +556,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                                 .wrapContentSize()
                                                 .background(BackgroundSecondColor)
                                         ) {
-                                            val totalHours =
-                                                24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
+                                            val totalHours = 24f * CalendarUtil.getDaysInMonth(pagerState.currentPage % 12)
                                             val pieChartData = PieChartData(
                                                 slices = loadedCategories.mapIndexed { _, value ->
                                                     PieChartData.Slice(
@@ -586,13 +701,13 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                                     getBarDataListByCategoryInMonth(
                                                         activityRecordViewModel,
                                                         selectedCategory,
-                                                        year,
+                                                        year.value,
                                                         pagerState.currentPage % 12
                                                     )
                                                 val ySteps = 25
                                                 val xSteps = CalendarUtil.getDaysInMonth(
                                                     pagerState.currentPage % 12,
-                                                    year
+                                                    year.value
                                                 ) + 2
                                                 val hourString = stringResource(id = R.string.hours)
                                                 val daysString = stringResource(id = R.string.days)
@@ -693,7 +808,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                         ) {
                                             CategoryCardContent(
                                                 category,
-                                                year,
+                                                year.value,
                                                 pagerState.currentPage % 12,
                                                 activityViewModel,
                                                 activityRecordViewModel,
@@ -712,7 +827,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                     for(time in 0..23) {
                                         val activityRecord =
                                             activityRecordViewModel.getActivityRecordByTime(
-                                                year,
+                                                year.value,
                                                 month,
                                                 dayNumber,
                                                 time
@@ -878,10 +993,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                 .fillMaxSize()
                 .background(BackgroundColor)
         ) {
-            CircularProgressIndicator(
-                Modifier.align(Alignment.Center),
-                color = MainColorSecondRed
-            )
+            ClockProgressIndicator(isLoaded)
         }
 }
 
@@ -1039,40 +1151,52 @@ fun getBarDataListByCategoryInMonth(
 
 suspend fun updateLoadedCategoriesCountList(
     loadedCategoriesCount: SnapshotStateMap<Int, List<RecordCountCategory>>,
-    year: Int,
+    year: MutableIntState,
     month: Int,
     activityRecordViewModel: ActivityRecordViewModel,
     categoryViewModel: CategoryViewModel
 ) {
-    loadedCategoriesCount[month] =
-        categoryViewModel.getCategories().first().toList().map { category ->
-            val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
-                category.id,
-                year,
-                month,
-            )
-            RecordCountCategory(category, count)
-        }.filter { it.count > 0 }
+    val startMonth = if(month == 12) 1 else if( month==-1) 10 else month
+    val endMonth = if(month == 12) 10 else if( month==-1) 1 else month
+    val monthRange = if(month==12) (startMonth..endMonth) else (startMonth downTo endMonth)
+    for(idx in monthRange) {
+        loadedCategoriesCount[idx] =
+            categoryViewModel.getCategories().first().toList().map { category ->
+                val count = activityRecordViewModel.getActivityRecordsCountByCategoryInMonth(
+                    category.id,
+                    year.intValue,
+                    idx,
+                )
+                RecordCountCategory(category, count)
+            }.filter { it.count > 0 }
+    }
 }
 
 suspend fun updateLoadedData(
     loadedData: SnapshotStateMap<Int, List<ActivityRecordView>>,
-    pageIndex: Int,
+    year: MutableIntState,
+    month: Int,
     activityRecordViewModel: ActivityRecordViewModel,
     activityViewModel: ActivityViewModel,
     categoryViewModel: CategoryViewModel
 ) {
-    loadedData[pageIndex % 12] = activityRecordViewModel.getActivityRecordsByMonth(
-        CalendarUtil.getCurrentYear(),
-        pageIndex % 12
-    ).first().map { record ->
-        val day = CalendarUtil.getCurrentDay(record.timestamp)
-        val hour = CalendarUtil.getCurrentHour(record.timestamp)
-        val category = categoryViewModel.getCategoryById(
-            activityViewModel.getActivityById(record.activityId)!!.categoryId
-        )
-        ActivityRecordView(day, hour, Color(category.color.toColorInt()))
+    val startMonth = if(month == 12) 1 else if( month==-1) 10 else month
+    val endMonth = if(month == 12) 10 else if( month==-1) 1 else month
+    val monthRange = if(month==12) (startMonth..endMonth) else (startMonth downTo endMonth)
+    for(idx in monthRange) {
+        loadedData[idx] = activityRecordViewModel.getActivityRecordsByMonth(
+            year.intValue,
+            idx
+        ).first().map { record ->
+            val day = CalendarUtil.getCurrentDay(record.timestamp)
+            val hour = CalendarUtil.getCurrentHour(record.timestamp)
+            val category = categoryViewModel.getCategoryById(
+                activityViewModel.getActivityById(record.activityId)!!.categoryId
+            )
+            ActivityRecordView(day, hour, Color(category.color.toColorInt()))
+        }
     }
+
 }
 
 

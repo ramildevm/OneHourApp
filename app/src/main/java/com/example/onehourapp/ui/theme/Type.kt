@@ -36,6 +36,20 @@ val MainFont = TextStyle(
     color = Color.White,
     textAlign = TextAlign.Center
 )
+val MainFontMedium = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = 18.sp,
+    color = Color.White,
+    textAlign = TextAlign.Center
+)
+val MainFontSmall = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    color = Color.White,
+    textAlign = TextAlign.Center
+)
 val TextFieldStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
     fontWeight = FontWeight.Normal,
@@ -46,14 +60,14 @@ val BottomBarLabelFontRu = TextStyle(
 fontFamily = FontFamily.Monospace,
 fontWeight = FontWeight.Bold,
     fontSize = 7.9.sp,
-    color = Color.White,
+    color = MainColorSecondRed,
     textAlign = TextAlign.Center
 )
 val BottomBarLabelFontEn = TextStyle(
 fontFamily = FontFamily.Monospace,
 fontWeight = FontWeight.Normal,
     fontSize = 9.sp,
-    color = Color.White,
+    color = MainColorSecondRed,
     textAlign = TextAlign.Center
 )
 val CalendarDayFont = TextStyle(

@@ -1,20 +1,7 @@
 package com.example.onehourapp.data.repositories
 
-import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.lifecycle.LiveData
-import com.example.onehourapp.data.database.dao.ActivityDao
-import com.example.onehourapp.data.database.dao.CategoryDao
 import com.example.onehourapp.data.database.dao.UserSettingsDao
-import com.example.onehourapp.data.models.Activity
-import com.example.onehourapp.data.models.Category
 import com.example.onehourapp.data.models.UserSettings
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -23,4 +10,13 @@ class UserSettingsRepository @Inject constructor(
 ){
     fun getUserSettings() = userSettingsDao.getUserSettings()
     suspend fun insertOrUpdateUserSettings(userSettings: UserSettings) = userSettingsDao.insertUpdateUserSettings(userSettings)
+    suspend fun updateUserSettingsAddingInfo(activityId:Int, date:Long) = userSettingsDao.updateUserSettingsAddingInfo(activityId, date)
+    suspend fun updateUserSettingsNotificationData(isNotificationsEnable:Boolean? = null, sleepStartHour:Int? = null, sleepEndHour:Int? = null) {
+        if(isNotificationsEnable!=null)
+            userSettingsDao.updateUserSettingsNotificationStatus(isNotificationsEnable)
+        if(sleepStartHour!=null)
+            userSettingsDao.updateUserSettingsNotificationStart(sleepStartHour)
+        if(sleepEndHour!=null)
+            userSettingsDao.updateUserSettingsNotificationEnd(sleepEndHour)
+    }
 }

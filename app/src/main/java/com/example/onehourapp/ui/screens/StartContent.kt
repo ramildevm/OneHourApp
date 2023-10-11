@@ -1,8 +1,5 @@
 package com.example.onehourapp.ui.screens
 
-import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -16,8 +13,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -27,9 +24,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,26 +39,21 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
-import co.yml.charts.common.extensions.isNotNull
-import coil.ImageLoader
-import coil.compose.rememberAsyncImagePainter
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import coil.request.ImageRequest
-import coil.size.Size
-import com.airbnb.lottie.LottieComposition
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionResult
 import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.R
+import com.example.onehourapp.data.preferences.SharedPreferencesKeys
+import com.example.onehourapp.helpers.NotificationsAlarmManager
+import com.example.onehourapp.helpers.createNotificationChannel
+import com.example.onehourapp.helpers.scheduleNotification
 import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.SharedPreferencesUtil
-import kotlinx.coroutines.delay
 
 @Composable
 fun StartContent(
@@ -75,6 +69,8 @@ fun StartContent(
 @Composable
 private fun MainPanel(onStartBtnClick: () -> Unit) {
     val context = LocalContext.current
+    val settingsViewModel:UserSettingsViewModel = hiltViewModel()
+
     var animateToEnd by remember { mutableStateOf(false) }
     val progress by animateFloatAsState(
         targetValue = if (animateToEnd) 1f else 0f,
@@ -112,9 +108,12 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
             )
             Image(
                 modifier = Modifier
-                    .rotate( rotation)
+                    .padding(5.dp)
+                    .fillMaxWidth()
+                    .rotate(rotation)
                     .align(Alignment.Center),
-                painter =  painterResource(R.drawable.start_activity_main_background),
+                painter = painterResource(R.drawable.start_activity_logo_bg),
+                contentScale = ContentScale.FillWidth,
                 contentDescription = null,
             )
             LottieAnimation(
@@ -153,12 +152,20 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
         Text(
             text = context.getString(R.string.slogan),
             style = MainFont,
-            modifier = Modifier.padding(horizontal = 20.dp).layoutId("middle_txt")
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .layoutId("middle_txt")
         )
         Button(
             onClick = {
                 animateToEnd = !animateToEnd
-                SharedPreferencesUtil.setSharedData(context,"auth_status","true")
+                SharedPreferencesUtil.setSharedData(context, SharedPreferencesKeys.PREF_AUTH_STATUS,"true")
+                SharedPreferencesUtil.setSharedData(context,SharedPreferencesKeys.PREF_START_HOUR,8)
+                SharedPreferencesUtil.setSharedData(context,SharedPreferencesKeys.PREF_END_HOUR,24)
+                createNotificationChannel(context)
+                val alarmManager = NotificationsAlarmManager(context)
+                alarmManager.startScheduleNotifications()
+                settingsViewModel.updateUserSettingsNotificationStatus(true)
                 onStartBtnClick()
             },
             shape = RoundedCornerShape(15.dp),

@@ -48,6 +48,7 @@ fun <T> HorizontalListItemPicker(
     dividersColor: Color = MaterialTheme.colors.primary,
     list: List<T>,
     textStyle: TextStyle = LocalTextStyle.current,
+    enabled:Boolean
 ) {
     val minimumAlpha = 0.3f
     val horizontalMargin = 8.dp
@@ -76,6 +77,7 @@ fun <T> HorizontalListItemPicker(
     Layout(
         modifier = modifier
             .draggable(
+                enabled = enabled,
                 orientation = Orientation.Horizontal,
                 state = rememberDraggableState { deltaX ->
                     coroutineScope.launch {

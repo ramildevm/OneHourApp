@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -147,6 +148,7 @@ fun ActivitiesList() {
                 text = stringResource(id = R.string.activity),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .align(Alignment.Center)
                     .background(
                         BackgroundColor
                     ),
