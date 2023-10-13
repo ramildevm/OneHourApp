@@ -31,7 +31,7 @@
             android:exported="true"
             android:screenOrientation="user"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.ActivityDialog" >
+            android:theme="@style/Theme.AppCompat.DayNight.Dialog" >
         </activity>
         <receiver
             android:name=".receivers.NotificationReceiverClass"

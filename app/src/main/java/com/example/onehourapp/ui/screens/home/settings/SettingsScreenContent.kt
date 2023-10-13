@@ -65,14 +65,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.onehourapp.R
 import com.example.onehourapp.data.preferences.SharedPreferencesKeys
-import com.example.onehourapp.helpers.AddNotificationHelper
+import com.example.onehourapp.helpers.NotificationChannelBuilder
 import com.example.onehourapp.helpers.NotificationsAlarmManager
-import com.example.onehourapp.helpers.createNotificationChannel
-import com.example.onehourapp.helpers.deleteNotificationChannel
-import com.example.onehourapp.helpers.isNotificationChannelEnabled
-import com.example.onehourapp.services.NotificationService
 import com.example.onehourapp.ui.components.NumberPicker
-import com.example.onehourapp.ui.helpers.gesturesDisabled
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.BackgroundSecondColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
@@ -99,12 +94,14 @@ fun SettingsContent(){
                 .padding(horizontal = 16.dp)
                 .fillMaxSize()) {
 
-            val flag = isNotificationChannelEnabled(context)
+            val flag = NotificationChannelBuilder.isNotificationChannelEnabled(context)
             var checked by remember {
                 mutableStateOf(flag)
             }
-            val start = SharedPreferencesUtil.getSharedIntData(context.applicationContext, SharedPreferencesKeys.PREF_START_HOUR)
-            val end = SharedPreferencesUtil.getSharedIntData(context.applicationContext, SharedPreferencesKeys.PREF_END_HOUR)
+
+            val userSettings = userSettingsViewModel.getUserSettings()
+            val start = userSettings.notificationStartHour
+            val end = userSettings.notificationEndHour
             var pickerStartValue by remember { mutableIntStateOf(start) }
             var pickerEndValue by remember { mutableIntStateOf(end) }
             Text(
@@ -127,11 +124,10 @@ fun SettingsContent(){
                     colors = SwitchDefaults.colors(uncheckedThumbColor = Color.DarkGray),
                     onCheckedChange = { flag ->
                         if (flag)
-                            createNotificationChannel(context)
+                            NotificationChannelBuilder.createNotificationChannel(context)
                         else
-                            deleteNotificationChannel(context)
+                            NotificationChannelBuilder.deleteNotificationChannel(context)
                         checked = flag
-                        userSettingsViewModel.updateUserSettingsNotificationStatus(flag)
                     }
                 )
             }
@@ -170,9 +166,7 @@ fun SettingsContent(){
                     enabled = checked,
                     onValueChange = { value ->
                         pickerStartValue = value
-                        SharedPreferencesUtil.setSharedData(context, SharedPreferencesKeys.PREF_START_HOUR,value)
-                        alarmManager.cancelScheduleNotifications()
-                        alarmManager.startScheduleNotifications()
+                        userSettingsViewModel.updateUserSettingsNotificationSleepStart(value)
                     }
                 )
             }
@@ -189,9 +183,7 @@ fun SettingsContent(){
                     enabled = checked,
                     onValueChange = { value ->
                         pickerEndValue = value
-                        SharedPreferencesUtil.setSharedData(context,SharedPreferencesKeys.PREF_END_HOUR,value)
-                        alarmManager.cancelScheduleNotifications()
-                        alarmManager.startScheduleNotifications()
+                        userSettingsViewModel.updateUserSettingsNotificationSleepEnd(value)
                     }
                 )
             }

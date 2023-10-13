@@ -16,15 +16,11 @@ interface UserSettingsDao {
     @Upsert
     suspend fun insertUpdateUserSettings(settings: UserSettings)
     @Query("UPDATE UserSettings " +
-            "SET isNotificationsEnable=:isNotificationsEnable " +
-            "WHERE id = 1;")
-    suspend fun updateUserSettingsNotificationStatus(isNotificationsEnable:Boolean)
-    @Query("UPDATE UserSettings " +
-            "SET sleepActivityStartHour=:sleepStartHour " +
+            "SET notificationStartHour=:sleepStartHour " +
             "WHERE id = 1;")
     suspend fun updateUserSettingsNotificationStart(sleepStartHour:Int)
     @Query("UPDATE UserSettings " +
-            "SET sleepActivityEndHour=:sleepEndHour " +
+            "SET notificationEndHour=:sleepEndHour " +
             "WHERE id = 1;")
     suspend fun updateUserSettingsNotificationEnd(sleepEndHour:Int)
     @Query("UPDATE UserSettings " +

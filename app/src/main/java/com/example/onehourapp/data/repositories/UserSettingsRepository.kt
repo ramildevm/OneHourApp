@@ -11,12 +11,10 @@ class UserSettingsRepository @Inject constructor(
     fun getUserSettings() = userSettingsDao.getUserSettings()
     suspend fun insertOrUpdateUserSettings(userSettings: UserSettings) = userSettingsDao.insertUpdateUserSettings(userSettings)
     suspend fun updateUserSettingsAddingInfo(activityId:Int, date:Long) = userSettingsDao.updateUserSettingsAddingInfo(activityId, date)
-    suspend fun updateUserSettingsNotificationData(isNotificationsEnable:Boolean? = null, sleepStartHour:Int? = null, sleepEndHour:Int? = null) {
-        if(isNotificationsEnable!=null)
-            userSettingsDao.updateUserSettingsNotificationStatus(isNotificationsEnable)
-        if(sleepStartHour!=null)
-            userSettingsDao.updateUserSettingsNotificationStart(sleepStartHour)
-        if(sleepEndHour!=null)
-            userSettingsDao.updateUserSettingsNotificationEnd(sleepEndHour)
+    suspend fun updateUserSettingsNotificationData(notificationStartHour:Int? = null, notificationEndHour:Int? = null) {
+        if(notificationStartHour!=null)
+            userSettingsDao.updateUserSettingsNotificationStart(notificationStartHour)
+        if(notificationEndHour!=null)
+            userSettingsDao.updateUserSettingsNotificationEnd(notificationEndHour)
     }
 }

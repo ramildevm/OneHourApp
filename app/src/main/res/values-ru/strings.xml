@@ -78,4 +78,6 @@
     <string name="enable_notifications">Включить уведомления:</string>
     <string name="start_hour">Время начала:</string>
     <string name="end_hour">Время окончания:</string>
+    <string name="how_did_pass_hour">Как прошел ваш час?</string>
+    <string name="click_to_add_record">Нажмите, чтобы добавить запись</string>
 </resources>

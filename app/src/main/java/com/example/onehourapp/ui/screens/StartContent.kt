@@ -48,9 +48,9 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.R
 import com.example.onehourapp.data.preferences.SharedPreferencesKeys
+import com.example.onehourapp.helpers.NotificationBootReceiverHelper
+import com.example.onehourapp.helpers.NotificationChannelBuilder
 import com.example.onehourapp.helpers.NotificationsAlarmManager
-import com.example.onehourapp.helpers.createNotificationChannel
-import com.example.onehourapp.helpers.scheduleNotification
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.SharedPreferencesUtil
@@ -69,7 +69,6 @@ fun StartContent(
 @Composable
 private fun MainPanel(onStartBtnClick: () -> Unit) {
     val context = LocalContext.current
-    val settingsViewModel:UserSettingsViewModel = hiltViewModel()
 
     var animateToEnd by remember { mutableStateOf(false) }
     val progress by animateFloatAsState(
@@ -160,12 +159,8 @@ private fun MainPanel(onStartBtnClick: () -> Unit) {
             onClick = {
                 animateToEnd = !animateToEnd
                 SharedPreferencesUtil.setSharedData(context, SharedPreferencesKeys.PREF_AUTH_STATUS,"true")
-                SharedPreferencesUtil.setSharedData(context,SharedPreferencesKeys.PREF_START_HOUR,8)
-                SharedPreferencesUtil.setSharedData(context,SharedPreferencesKeys.PREF_END_HOUR,24)
-                createNotificationChannel(context)
-                val alarmManager = NotificationsAlarmManager(context)
-                alarmManager.startScheduleNotifications()
-                settingsViewModel.updateUserSettingsNotificationStatus(true)
+                NotificationBootReceiverHelper.enableBootReceiver(context)
+                NotificationChannelBuilder.createNotificationChannel(context)
                 onStartBtnClick()
             },
             shape = RoundedCornerShape(15.dp),

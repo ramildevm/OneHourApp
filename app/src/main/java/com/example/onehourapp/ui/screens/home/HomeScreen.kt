@@ -1,24 +1,16 @@
 package com.example.onehourapp.ui.screens.home
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,15 +18,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -43,15 +32,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.onehourapp.R
 import com.example.onehourapp.ui.graphs.HomeNavGraph
-import com.example.onehourapp.ui.screens.AddButtonScreen
-import com.example.onehourapp.ui.screens.BottomBarScreen
 import com.example.onehourapp.ui.theme.BottomBarAddColor
 import com.example.onehourapp.ui.theme.BottomBarColor
 import com.example.onehourapp.ui.theme.BottomBarLabelFontEn
 import com.example.onehourapp.ui.theme.BottomBarLabelFontRu
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.utils.CalendarUtil
-import java.util.Calendar
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -141,7 +127,7 @@ fun RowScope.AddItem(
     navController: NavHostController
 )
  {
-     val isAddScreen = screen is AddButtonScreen
+     val isAddScreen = screen.route == "ADD"
     val isSelected = currentDestination?.hierarchy?.any {
         it.route == screen.route
     } == true

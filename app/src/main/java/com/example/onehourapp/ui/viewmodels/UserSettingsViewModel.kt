@@ -23,19 +23,14 @@ class UserSettingsViewModel @Inject constructor(
             repository.updateUserSettingsAddingInfo(lasAddedActivityId, lastAddedDate)
         }
     }
-    fun updateUserSettingsNotificationStatus(isNotificationsEnable:Boolean){
-        viewModelScope.launch{
-            repository.updateUserSettingsNotificationData(isNotificationsEnable = isNotificationsEnable)
-        }
-    }
     fun updateUserSettingsNotificationSleepStart(sleepStartHour:Int){
         viewModelScope.launch{
-            repository.updateUserSettingsNotificationData(sleepStartHour = sleepStartHour)
+            repository.updateUserSettingsNotificationData(notificationStartHour = sleepStartHour)
         }
     }
     fun updateUserSettingsNotificationSleepEnd(sleepEndHour:Int){
         viewModelScope.launch{
-            repository.updateUserSettingsNotificationData(sleepEndHour = sleepEndHour)
+            repository.updateUserSettingsNotificationData(notificationEndHour = sleepEndHour)
         }
     }
 }

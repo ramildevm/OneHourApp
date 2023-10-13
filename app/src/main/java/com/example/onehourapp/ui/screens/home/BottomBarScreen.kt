@@ -1,6 +1,7 @@
-package com.example.onehourapp.ui.screens
+package com.example.onehourapp.ui.screens.home
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.*
 import com.example.onehourapp.R
 import com.example.onehourapp.ui.helpers.IconResource
@@ -25,8 +26,8 @@ sealed class BottomBarScreen(
     object Add : BottomBarScreen(
         route = "ADD",
         title = 0,
-        icon = IconResource.fromDrawableResource(R.drawable.add_circle_icon)
-    ), AddButtonScreen
+        icon = IconResource.fromImageVector(Icons.Rounded.Add)
+    )
 
     object Activity : BottomBarScreen(
         route = "ACTIVITY",
@@ -40,4 +41,3 @@ sealed class BottomBarScreen(
         icon = IconResource.fromImageVector(Icons.Rounded.Settings)
     )
 }
-interface AddButtonScreen

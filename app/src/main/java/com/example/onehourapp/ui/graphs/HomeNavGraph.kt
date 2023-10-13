@@ -17,7 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.example.onehourapp.ui.screens.BottomBarScreen
+import com.example.onehourapp.ui.screens.home.BottomBarScreen
 import com.example.onehourapp.ui.screens.home.settings.SettingsContent
 import com.example.onehourapp.ui.screens.home.yearstat.YearStatScreenContent
 import com.example.onehourapp.ui.screens.home.activity.ActivityScreenContent
