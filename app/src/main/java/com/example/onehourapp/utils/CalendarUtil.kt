@@ -110,4 +110,16 @@ object CalendarUtil {
         return calendar.timeInMillis
     }
 
+    fun getFullDateTimeString(timestamp: Long): String {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timestamp
+        return String.format(
+            "%d-%d-%d %02d:00",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.HOUR_OF_DAY)
+        )
+    }
+
 }

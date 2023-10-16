@@ -79,4 +79,9 @@
     <string name="end_hour">End hour:</string>
     <string name="how_did_pass_hour">How did pass your hour?</string>
     <string name="click_to_add_record">Click here to add a record</string>
+    <string name="color">Color</string>
+    <string name="date_and_time">Date and time</string>
+    <string name="language">Language:</string>
+    <string name="import_to_excel">Import to Excel</string>
+    <string name="add_last_activity">Add last activity</string>
 </resources>

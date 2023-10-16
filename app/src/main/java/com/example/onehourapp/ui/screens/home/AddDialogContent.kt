@@ -8,6 +8,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -34,12 +35,14 @@ import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.UserSettings
 import com.example.onehourapp.ui.theme.BackgroundColor
+import com.example.onehourapp.ui.theme.InnerTextColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.CalendarUtil
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 
@@ -58,6 +61,7 @@ fun AddRecordDialog(
     notifyChange: (month: Int) -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val categoryViewModel: CategoryViewModel = hiltViewModel()
@@ -65,358 +69,353 @@ fun AddRecordDialog(
     val activityRecordViewModel: ActivityRecordViewModel = hiltViewModel()
     val userSettingsViewModel: UserSettingsViewModel = hiltViewModel()
 
-    var userSettings: UserSettings? by remember {
-        mutableStateOf(null)
-    }
-    LaunchedEffect(key1 = Unit) {
-        userSettings = userSettingsViewModel.getUserSettings()
-    }
-    if (userSettings != null) {
-        val actualDate by remember {
-            when(callerType){
-                AddCallerType.HOME_SCREEN ->
-                    mutableLongStateOf(
-                        if (userSettings!!.lastAddedDate != 0L)
-                            userSettings!!.lastAddedDate
-                        else {
-                            date - if (hour == 0) 86400000L else 0L
-                        }
-                    )
-                AddCallerType.NOTIFICATION -> mutableLongStateOf(date)
-            }
-        }
-        val mCalendar by remember { mutableStateOf(Calendar.getInstance()) }
-        mCalendar.timeInMillis = actualDate
-        mCalendar.set(Calendar.HOUR_OF_DAY, 0)
-        mCalendar.set(Calendar.MINUTE, 0)
-        mCalendar.set(Calendar.SECOND, 0)
-        mCalendar.set(Calendar.MILLISECOND, 0)
+    val userSettings: UserSettings  = userSettingsViewModel.getUserSettings()
 
-        var selectedDateMillis by remember {
-            mutableLongStateOf(actualDate)
-        }
-        var selectedActivityId by remember { mutableIntStateOf(userSettings!!.lastAddedActivityId) }
-
-        var selectedCategoryId by remember { mutableIntStateOf(-1) }
-
-        var selectedActivityName by remember {
-            mutableStateOf(
-                activityViewModel.getActivityById(
-                    userSettings!!.lastAddedActivityId
-                )?.name ?: ""
-            )
-        }
-
-        var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
-        var isAddActivity by remember { mutableStateOf(false) }
-
-        var pickerEndValue by remember { mutableIntStateOf(hour) }
-        var pickerStartValue by remember { mutableIntStateOf(if (pickerEndValue == 0) 23 else pickerEndValue - 1) }
-
-
-        AlertDialog(
-            backgroundColor = BackgroundColor,
-            modifier = Modifier.shadow(
-                15.dp,
-                ambientColor = Color.White,
-                spotColor = Color.LightGray
-            ),
-            onDismissRequest = {},
-            title = {
-                Text(
-                    text = stringResource(R.string.adding_a_record),
-                    textAlign = TextAlign.Center,
-                    color = MainColorSecondRed
+    val lastAddedDate = userSettings.lastAddedDate
+    val actualDate by remember {
+        when(callerType){
+            AddCallerType.HOME_SCREEN ->
+            mutableLongStateOf(
+                    if (lastAddedDate!= 0L && lastAddedDate <= date)
+                            userSettings.lastAddedDate
+                    else {
+                        date - if (hour == 0) 86400000L else 0L
+                    }
                 )
-            },
-            text = {
-                Column(
-                    modifier = Modifier.padding(10.dp)
+            AddCallerType.NOTIFICATION -> mutableLongStateOf(date)
+        }
+    }
+    val mCalendar by remember { mutableStateOf(Calendar.getInstance()) }
+    mCalendar.timeInMillis = actualDate
+    mCalendar.set(Calendar.HOUR_OF_DAY, 0)
+    mCalendar.set(Calendar.MINUTE, 0)
+    mCalendar.set(Calendar.SECOND, 0)
+    mCalendar.set(Calendar.MILLISECOND, 0)
+
+    var selectedDateMillis by remember {
+        mutableLongStateOf(actualDate)
+    }
+    var selectedActivityId by remember { mutableIntStateOf(userSettings!!.lastAddedActivityId) }
+
+    var selectedCategoryId by remember { mutableIntStateOf(-1) }
+
+    var selectedActivityName by remember {
+        mutableStateOf(
+            activityViewModel.getActivityById(
+                userSettings!!.lastAddedActivityId
+            )?.name ?: ""
+        )
+    }
+
+    var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
+    var isAddActivity by remember { mutableStateOf(false) }
+
+    var pickerEndValue by remember { mutableIntStateOf(hour) }
+    var pickerStartValue by remember { mutableIntStateOf(if (pickerEndValue == 0) 23 else pickerEndValue - 1) }
+
+
+    AlertDialog(
+        backgroundColor = BackgroundColor,
+        modifier = Modifier.shadow(
+            15.dp,
+            ambientColor = Color.White,
+            spotColor = Color.LightGray
+        ),
+        onDismissRequest = {},
+        title = {
+            Text(
+                text = stringResource(R.string.adding_a_record),
+                textAlign = TextAlign.Center,
+                color = MainColorSecondRed
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            text = stringResource(R.string.select_a_date),
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colors.onSurface
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val mDate = remember {
-                        mutableStateOf(
-                            String.format(
-                                "%02d.%02d.${mCalendar.get(Calendar.YEAR)}",
-                                mCalendar.get(Calendar.DAY_OF_MONTH),
-                                mCalendar.get(Calendar.MONTH) + 1
-                            )
-                        )
-                    }
-
-                    val mDatePickerDialog = DatePickerDialog(
-                        context,
-                        { _, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-                            selectedDateMillis = CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
-                            mDate.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
-                        },
-                        mCalendar.get(Calendar.YEAR),
-                        mCalendar.get(Calendar.MONTH),
-                        mCalendar.get(Calendar.DAY_OF_MONTH)
+                    Text(
+                        text = stringResource(R.string.select_a_date),
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colors.onSurface
                     )
-                    mDatePickerDialog.datePicker.maxDate = when (callerType) {
-                        AddCallerType.HOME_SCREEN ->  System.currentTimeMillis() + if(hour!=0) 1000L else -(60*60*1000*24)
-                        AddCallerType.NOTIFICATION -> selectedDateMillis + 1000L
-                    }
-                    Box {
-                        OutlinedTextField(
-                            value = mDate.value,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                if(callerType == AddCallerType.HOME_SCREEN)
-                                    IconButton(onClick = { mDatePickerDialog.show() }) {
-                                        Icon(
-                                            imageVector = Icons.Default.CalendarMonth,
-                                            tint = MainColorSecondRed,
-                                            contentDescription = null
-                                        )
-                                    }
-                            })
-                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            text = stringResource(R.string.select_an_activity),
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colors.onSurface
+                val mDate = remember {
+                    mutableStateOf(
+                        String.format(
+                            "%02d.%02d.${mCalendar.get(Calendar.YEAR)}",
+                            mCalendar.get(Calendar.DAY_OF_MONTH),
+                            mCalendar.get(Calendar.MONTH) + 1
                         )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    )
+                }
+
+                val mDatePickerDialog = DatePickerDialog(
+                    context,
+                    { _, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+                        selectedDateMillis = CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
+                        mDate.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
+                    },
+                    mCalendar.get(Calendar.YEAR),
+                    mCalendar.get(Calendar.MONTH),
+                    mCalendar.get(Calendar.DAY_OF_MONTH)
+                )
+                mDatePickerDialog.datePicker.maxDate = when (callerType) {
+                    AddCallerType.HOME_SCREEN ->  System.currentTimeMillis() + if(hour!=0) 1000L else -(60*60*1000*24)
+                    AddCallerType.NOTIFICATION -> selectedDateMillis + 1000L
+                }
+                Box {
+                    OutlinedTextField(
+                        value = mDate.value,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(textColor = InnerTextColor),
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {
+                            if(callerType == AddCallerType.HOME_SCREEN)
+                                IconButton(onClick = { mDatePickerDialog.show() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarMonth,
+                                        tint = MainColorSecondRed,
+                                        contentDescription = null
+                                    )
+                                }
+                        })
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = stringResource(R.string.select_an_activity),
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
 //
 //                                        val activities = activityViewModel.getActivities().collectAsState(initial = emptyList())
 //                                        Button(onClick = { createActivityRecord2(activities, activityRecordViewModel) }) {
 //                                            Text("Populate")
 //                                        }
 
-                    val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
-                    var expanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded }) {
-                        Box {
-                            if (isAddActivity)
-                                OutlinedTextField(
-                                    label = { Text(text = categories.value.find { category -> category.id == selectedCategoryId }!!.name) },
-                                    value = selectedActivityName,
-                                    onValueChange = {
-                                        if (it.length <= 50) selectedActivityName = it
-                                    },
-                                    readOnly = false,
-                                    keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                                    trailingIcon = {
-                                        IconButton(onClick = { isAddActivity = false }) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Cancel,
-                                                contentDescription = "Cancel icon"
-                                            )
-                                        }
-                                    }
-                                )
-                            else
-                                OutlinedTextField(
-                                    value = selectedActivityName,
-                                    onValueChange = { },
-                                    readOnly = true,
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = expanded
+                val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
+                var expanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }) {
+                    Box {
+                        if (isAddActivity)
+                            OutlinedTextField(
+                                label = { Text(text = categories.value.find { category -> category.id == selectedCategoryId }!!.name )},
+                                value = selectedActivityName,
+                                onValueChange = {
+                                    if (it.length <= 50) selectedActivityName = it
+                                },
+                                readOnly = false,
+                                keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                                trailingIcon = {
+                                    IconButton(onClick = { isAddActivity = false }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Cancel,
+                                            contentDescription = "Cancel icon"
                                         )
                                     }
-                                )
-                        }
-                        if (!isAddActivity)
-                            ExposedDropdownMenu(
-                                modifier = Modifier
-                                    .animateContentSize(
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        )
-                                    ),
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                categories.value.forEach { category ->
-                                    var expandedCategory by remember {
-                                        mutableIntStateOf(-1)
-                                    }
-                                    val isExpanded = expandedCategory == category.id
-                                    DropdownMenuItem(
-                                        content = {
-                                            Box(Modifier.weight(1f)) {
-                                                Row {
-                                                    Text(
-                                                        "● ",
-                                                        fontSize = 20.sp,
-                                                        color = Color(category.color.toColorInt())
-                                                    )
-                                                    Text(text = category.name)
-                                                }
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(textColor =InnerTextColor)
+                            )
+                        else
+                            OutlinedTextField(
+                                value = selectedActivityName,
+                                onValueChange = { },
+                                readOnly = true,
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(
+                                        expanded = expanded
+                                    )
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(textColor =InnerTextColor)
+                            )
+                    }
+                    val scrollState = rememberScrollState()
+                    if (!isAddActivity)
+                        ExposedDropdownMenu(
+                            modifier = Modifier
+                                .animateContentSize(
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioLowBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    )
+                                ),
+                            scrollState = scrollState,
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            categories.value.forEach { category ->
+                                var expandedCategory by remember {
+                                    mutableIntStateOf(-1)
+                                }
+                                val isExpanded = expandedCategory == category.id
+                                DropdownMenuItem(
+                                    content = {
+                                        Column(Modifier.weight(1f)) {
+                                            Row {
+                                                Text(
+                                                    "● ",
+                                                    fontSize = 20.sp,
+                                                    color = Color(category.color.toColorInt())
+                                                )
+                                                Text(text = category.name,Modifier.weight(1f))
                                                 Text(
                                                     text = "▲",
                                                     Modifier
                                                         .padding(horizontal = 5.dp)
                                                         .rotate(if (!isExpanded) 180f else 0f)
-                                                        .align(Alignment.CenterEnd)
                                                 )
                                             }
-                                        },
-                                        onClick = {
-                                            expandedCategory = if (isExpanded) -1 else category.id
                                         }
-                                    )
-                                    if (expandedCategory == category.id) {
-                                        val activities =
-                                            activityViewModel.getActivities(category.id)
-                                                .collectAsState(
-                                                    initial = emptyList()
-                                                )
-                                        activities.value.forEach { activity ->
-                                            DropdownMenuItem(
-                                                content = {
-                                                    Row(Modifier.padding(horizontal = 10.dp)) {
-                                                        Text(
-                                                            "● ",
-                                                            fontSize = 16.sp,
-                                                            color = Color(category.color.toColorInt())
-                                                        )
-                                                        Text(text = activity.name)
-                                                    }
-                                                },
-                                                onClick = {
-                                                    selectedActivityId = activity.id
-                                                    selectedCategoryId = -1
-                                                    selectedActivityName = activity.name
-                                                    expandedCategory = -1
-                                                    isAddActivity = false
-                                                    expanded = false
-                                                }
+                                    },
+                                    onClick = {
+                                        scope.launch {
+                                            scrollState.animateScrollTo(scrollState.value + if (isExpanded)  3 else -3)
+                                        }
+                                        expandedCategory = if (isExpanded) -1 else category.id
+                                    }
+                                )
+                                if (expandedCategory == category.id) {
+                                    val activities =
+                                        activityViewModel.getActivities(category.id)
+                                            .collectAsState(
+                                                initial = emptyList()
                                             )
-                                        }
+                                    activities.value.forEach { activity ->
                                         DropdownMenuItem(
-                                            modifier = Modifier.fillMaxWidth(),
                                             content = {
-                                                Text(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    color = MainColorSecondRed,
-                                                    text = stringResource(id = R.string.add),
-                                                    textAlign = TextAlign.Center
-                                                )
+                                                Row(Modifier.padding(horizontal = 10.dp)) {
+                                                    Text(
+                                                        "● ",
+                                                        fontSize = 16.sp,
+                                                        color = Color(category.color.toColorInt())
+                                                    )
+                                                    Text(text = activity.name)
+                                                }
                                             },
                                             onClick = {
-                                                selectedActivityId = -1
-                                                selectedCategoryId = category.id
-                                                isAddActivity = true
+                                                selectedActivityId = activity.id
+                                                selectedCategoryId = -1
+                                                selectedActivityName = activity.name
+                                                expandedCategory = -1
+                                                isAddActivity = false
                                                 expanded = false
-                                                selectedActivityName = " "
                                             }
                                         )
                                     }
+                                    DropdownMenuItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        content = {
+                                            Text(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                color = MainColorSecondRed,
+                                                text = stringResource(id = R.string.add),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedActivityId = -1
+                                            selectedCategoryId = category.id
+                                            isAddActivity = true
+                                            expanded = false
+                                            selectedActivityName = " "
+                                        }
+                                    )
                                 }
                             }
-                    }
-                    if (isTextFieldEmpty) {
-                        Text(
-                            text = stringResource(R.string.empty_field),
-                            color = MaterialTheme.colors.error,
-                            style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
-                            modifier = Modifier
-                                .padding(start = 16.dp)
-                        )
-                    } else
-                        Spacer(modifier = Modifier.height(16.dp))
-                    key(selectedDateMillis.hashCode()) {
-                        val start =
-                            if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
-                        val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
-                        var sliderPosition by remember { mutableStateOf(start..end) }
-                        Box(Modifier.fillMaxWidth()) {
-                            Text(stringResource(id = R.string.time))
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = Color.White,
-                                text = "${sliderPosition.start.toInt()}  -  ${sliderPosition.endInclusive.toInt()}",
-                                textAlign = TextAlign.Center
-                            )
                         }
-                        RangeSlider(
-                            steps = end.toInt() - 1,
-                            value = sliderPosition,
-                            onValueChange = {
-                                sliderPosition = if (it.start < it.endInclusive)
-                                    it
-                                else
-                                    it.endInclusive - 1..it.endInclusive
-                                if (it.start == it.endInclusive && it.endInclusive == 0f)
-                                    sliderPosition = it.start..it.start + 1
-                            },
-                            valueRange = 0f..end,
-                            onValueChangeFinished = {
-                                pickerStartValue = sliderPosition.start.toInt()
-                                pickerEndValue = sliderPosition.endInclusive.toInt()
-                            }
-                        )
-                        Row(Modifier.padding(horizontal = 4.dp)) {
-                            val step = when (end.toInt()) {
-                                in 0 until 12 -> 1
-                                in 12 until 18 -> 2
-                                in 18..24 -> 3
-                                else -> 1
-                            }
-                            for (i in 0..end.toInt() step step) {
-                                Text(String.format("%02d", i))
-                                if (i != end.toInt())
-                                    Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                        Spacer(modifier = Modifier.size(30.dp))
-                    }
                 }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        selectedActivityName = selectedActivityName.trim()
-                        if (selectedActivityName.isEmpty() || selectedActivityName.isBlank()) {
-                            isTextFieldEmpty = true
-                            return@Button
+                if (isTextFieldEmpty) {
+                    Text(
+                        text = stringResource(R.string.empty_field),
+                        color = MaterialTheme.colors.error,
+                        style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                    )
+                } else
+                    Spacer(modifier = Modifier.height(16.dp))
+                key(selectedDateMillis.hashCode()) {
+                    val start =
+                        if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
+                    val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
+                    var sliderPosition by remember { mutableStateOf(start..end) }
+                    Box(Modifier.fillMaxWidth()) {
+                        Text(stringResource(id = R.string.time),
+                            color = Color.White)
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            text = "${sliderPosition.start.toInt()}  -  ${sliderPosition.endInclusive.toInt()}",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    RangeSlider(
+                        steps =  (end - 1f).toInt(),
+                        value = sliderPosition,
+                        enabled = end != 1f,
+                        onValueChange = {
+                            sliderPosition = if (it.start < it.endInclusive)
+                                it
+                            else
+                                it.endInclusive - 1..it.endInclusive
+                            if (it.start == it.endInclusive && it.endInclusive == 0f)
+                                sliderPosition = it.start..it.start + 1
+                        },
+                        valueRange = 0f..end,
+                        onValueChangeFinished = {
+                            pickerStartValue = sliderPosition.start.toInt()
+                            pickerEndValue = sliderPosition.endInclusive.toInt()
                         }
-                        if (isAddActivity) {
-                            activityViewModel.insertActivity(
-                                Activity(
-                                    0,
-                                    selectedActivityName.trim(),
-                                    selectedCategoryId
-                                )
+                    )
+                    Row(Modifier.padding(horizontal = 4.dp)) {
+                        val step = when (end.toInt()) {
+                            in 0 until 12 -> 1
+                            in 12 until 18 -> 2
+                            in 18..24 -> 3
+                            else -> 1
+                        }
+                        for (i in 0..end.toInt() step step) {
+                            Text(String.format("%02d", i),
+                                color = InnerTextColor)
+                            if (i != end.toInt())
+                                Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(30.dp))
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    selectedActivityName = selectedActivityName.trim()
+                    if (selectedActivityName.isEmpty() || selectedActivityName.isBlank()) {
+                        isTextFieldEmpty = true
+                        return@Button
+                    }
+                    if (isAddActivity) {
+                        activityViewModel.insertActivity(
+                            Activity(
+                                0,
+                                selectedActivityName.trim(),
+                                selectedCategoryId
                             )
-                            activityViewModel.insertResult.observe(lifecycleOwner) { activityId ->
-                                createActivityRecord(
-                                    hour,
-                                    selectedDateMillis,
-                                    pickerStartValue,
-                                    pickerEndValue,
-                                    activityRecordViewModel,
-                                    userSettingsViewModel,
-                                    activityId
-                                )
-                            }
-                        } else {
+                        )
+                        activityViewModel.insertResult.observe(lifecycleOwner) { activityId ->
                             createActivityRecord(
                                 hour,
                                 selectedDateMillis,
@@ -424,31 +423,41 @@ fun AddRecordDialog(
                                 pickerEndValue,
                                 activityRecordViewModel,
                                 userSettingsViewModel,
-                                selectedActivityId
+                                activityId
                             )
                         }
-                        notifyChange(CalendarUtil.getCurrentMonth(selectedDateMillis))
-                        Toast.makeText(
-                            context,
-                            context.getText(R.string.successfull_records_add),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        onDismiss()
+                    } else {
+                        createActivityRecord(
+                            hour,
+                            selectedDateMillis,
+                            pickerStartValue,
+                            pickerEndValue,
+                            activityRecordViewModel,
+                            userSettingsViewModel,
+                            selectedActivityId
+                        )
                     }
-                ) {
-                    Text(text = stringResource(id = R.string.add))
+                    notifyChange(CalendarUtil.getCurrentMonth(selectedDateMillis))
+                    Toast.makeText(
+                        context,
+                        context.getText(R.string.successfull_records_add),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    onDismiss()
                 }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { onDismiss() },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error)
-                ) {
-                    Text(text = stringResource(id = R.string.cancel))
-                }
+            ) {
+                Text(text = stringResource(id = R.string.add))
             }
-        )
-    }
+        },
+        dismissButton = {
+            Button(
+                onClick = { onDismiss() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error)
+            ) {
+                Text(text = stringResource(id = R.string.cancel))
+            }
+        }
+    )
 }
 
 fun createActivityRecord3(
@@ -856,6 +865,7 @@ fun createActivityRecord(
     userSettingsViewModel: UserSettingsViewModel,
     selectedActivityId: Int
 ) {
+    //FIXME 23-24 сохранение
     val startDate = Calendar.getInstance()
     startDate.timeInMillis = selectedDateMillis
     startDate.set(Calendar.HOUR_OF_DAY, pickerStartValue)

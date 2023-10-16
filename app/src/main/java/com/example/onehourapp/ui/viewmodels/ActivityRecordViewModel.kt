@@ -28,6 +28,8 @@ class ActivityRecordViewModel @Inject constructor(
     fun getActivityRecordsCountByCategoryInDay(categoryId:Int, year:Int, month:Int, day:Int) = repository.getActivityRecordsCountByCategoryInDay(categoryId,year,month, day)
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 
+    fun getActivityRecordsForExcel() = repository.getActivityRecordsForExcel()
+
     fun insertActivityRecord(activityRecord: ActivityRecord, hour:Int=0, day:Int=0){
         viewModelScope.launch{
             repository.insertOrUpdateActivityRecord(activityRecord)

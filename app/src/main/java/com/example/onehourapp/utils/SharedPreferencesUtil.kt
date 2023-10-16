@@ -16,17 +16,14 @@ object SharedPreferencesUtil {
     }
     fun getSharedStringData(context: Context, key: String):String{
         val sharedPref = context.getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
-        val value = sharedPref.getString(key, "")
-        return value!!
+        return sharedPref.getString(key, "")?:""
     }
-    fun getSharedIntData(context: Context, key: String, default: Int = 0):Int{
+    fun getSharedIntData(context: Context, key: String, default: Int = 0): Int {
         val sharedPref = context.getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
-        val value = sharedPref.getInt(key, default)
-        return value!!
+        return sharedPref.getInt(key, default)
     }
-    fun getSharedBooleanData(context: Context, key: String):Boolean{
+    fun getSharedBooleanData(context: Context, key: String): Boolean {
         val sharedPref = context.getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
-        val value = sharedPref.getBoolean(key, false)
-        return value!!
+        return sharedPref.getBoolean(key, false)
     }
 }

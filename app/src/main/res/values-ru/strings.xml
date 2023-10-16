@@ -80,4 +80,9 @@
     <string name="end_hour">Время окончания:</string>
     <string name="how_did_pass_hour">Как прошел ваш час?</string>
     <string name="click_to_add_record">Нажмите, чтобы добавить запись</string>
+    <string name="color">Цвет</string>
+    <string name="date_and_time">Дата и время</string>
+    <string name="language">Язык:</string>
+    <string name="import_to_excel">Импорт в Excel</string>
+    <string name="add_last_activity">Добавить последнюю активность</string>
 </resources>

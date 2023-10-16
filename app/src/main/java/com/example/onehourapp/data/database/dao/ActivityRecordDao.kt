@@ -8,6 +8,7 @@ import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
 import com.example.onehourapp.data.models.dto.CategoryCount
+import com.example.onehourapp.data.models.dto.ExcelRecord
 import kotlinx.coroutines.flow.Flow
 import java.sql.Timestamp
 
@@ -35,6 +36,11 @@ interface ActivityRecordDao {
             "WHERE ar.timestamp BETWEEN :startTimestamp AND :endTimeStamp " +
             "GROUP BY a.categoryId ")
     fun getActivityRecordsCountListByCategories(startTimestamp: Long, endTimeStamp: Long): Flow<List<CategoryCount>>
+    @Query("SELECT ar.id as id, c.name as category, a.name as activity, c.color as color, ar.timestamp as timestamp FROM ActivityRecord ar " +
+            "INNER JOIN Activity a ON ar.activityId = a.id " +
+            "INNER JOIN Category c ON c.id = a.categoryId " +
+            "ORDER BY timestamp ASC")
+    fun getActivityRecordsForExcel(): Flow<List<ExcelRecord>>
     @Upsert
     suspend fun insertActivityRecord(activityRecord: ActivityRecord)
 

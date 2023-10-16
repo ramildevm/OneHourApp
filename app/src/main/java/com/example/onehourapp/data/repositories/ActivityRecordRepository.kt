@@ -66,6 +66,7 @@ class ActivityRecordRepository @Inject constructor(
         val endOfDay = startOfDay + 82800000L
         return activityRecordDao.getActivityRecordsCountByCategoryId(categoryId, startOfDay, endOfDay)
     }
+    fun getActivityRecordsForExcel() = activityRecordDao.getActivityRecordsForExcel()
     fun getActivityRecordByTime(year: Int, month: Int, day:Int, hour:Int): ActivityRecord? {
         val time = Calendar.getInstance()
         time.set(year,month,day,hour,0,0)

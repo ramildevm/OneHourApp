@@ -76,6 +76,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -381,11 +383,6 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                         }
 
                     }
-                    if (page%12 == 0) {
-
-                    } else if (page % 12 == 11) {
-
-                    }
                 }
             }
             HorizontalPager(
@@ -475,6 +472,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                 for (column in 0 until columns) {
                                     val day = column + 1
                                     val isCurrentDay = (day == CalendarUtil.getCurrentDay() && isCurrentMonth)
+                                    val isCurrentHour = (day == CalendarUtil.getCurrentDay() && isCurrentMonth && row == CalendarUtil.getCurrentHour())
                                     val x = column * (cellSize + 5)
                                     var y = row * (cellSize + 5)
                                     val center = (columns - 1) / 2
@@ -501,6 +499,20 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                                 2.dp.toPx()
                                             )
                                         )
+                                        if(isCurrentHour)
+                                            drawRoundRect(
+                                                color = Color.White,
+                                                topLeft = Offset(
+                                                    x + spacing.toPx(),
+                                                    y - offset + spacing.toPx()
+                                                ),
+                                                size = Size(cellSize, cellSize),
+                                                cornerRadius = CornerRadius(
+                                                    2.dp.toPx(),
+                                                    2.dp.toPx()
+                                                ),
+                                                style = Stroke(width=1.dp.toPx())
+                                            )
                                     } else {
                                         var textOffset = 0
                                         if ((column + 1) % 10 == 0)

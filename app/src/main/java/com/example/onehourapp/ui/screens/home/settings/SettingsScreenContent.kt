@@ -1,40 +1,43 @@
 package com.example.onehourapp.ui.screens.home.settings
 
-import android.app.NotificationManager
-import android.content.Intent
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RenderEffect
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
-import android.util.Log
-import android.widget.Space
-import androidx.compose.foundation.Canvas
+import android.os.Environment
+import android.widget.ImageButton
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
-import androidx.compose.material.SwitchColors
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.TableView
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,40 +48,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asComposeRenderEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.onehourapp.R
+import com.example.onehourapp.data.models.dto.ExcelRecord
 import com.example.onehourapp.data.preferences.SharedPreferencesKeys
 import com.example.onehourapp.helpers.NotificationChannelBuilder
 import com.example.onehourapp.helpers.NotificationsAlarmManager
 import com.example.onehourapp.ui.components.NumberPicker
 import com.example.onehourapp.ui.theme.BackgroundColor
-import com.example.onehourapp.ui.theme.BackgroundSecondColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.ui.theme.MainFontMedium
-import com.example.onehourapp.ui.theme.MainFontSmall
+import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
-import com.example.onehourapp.utils.CalendarUtil
+import com.example.onehourapp.utils.ExcelFileMaker
 import com.example.onehourapp.utils.SharedPreferencesUtil
-import kotlinx.coroutines.delay
+import com.example.onehourapp.utils.SystemUtil
+import com.example.onehourapp.utils.SystemUtil.getActivity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.Locale
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -86,6 +85,7 @@ import kotlinx.coroutines.launch
 fun SettingsContent(){
     Scaffold(modifier = Modifier.background(BackgroundColor)) {
         val userSettingsViewModel:UserSettingsViewModel = hiltViewModel()
+        val activityRecordViewModel:ActivityRecordViewModel = hiltViewModel()
         val context = LocalContext.current
         Column(
             Modifier
@@ -116,7 +116,42 @@ fun SettingsContent(){
                 style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
                 color = Color.Red
             )
-            Box(modifier = Modifier.fillMaxWidth()){
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    val currentLocale = Locale.getDefault()
+                    val languageCode = currentLocale.language
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        text = stringResource(R.string.language),
+                        style = MainFont,
+                        textAlign = TextAlign.Center
+                    )
+                    Row(Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically){
+                        TextButton(onClick = {
+                            if(languageCode=="en") {
+                                SystemUtil.setLocale(context.getActivity(), "ru")
+                                SharedPreferencesUtil.setSharedData(context.getActivity(), SharedPreferencesKeys.PREF_LOCALE_LANGUAGE,"ru")
+                            }
+                        }) {
+                            Text(text = "Ru", fontSize = 20.sp, color = if(languageCode=="ru") MainColorSecondRed else Color.White, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier
+                            .height(30.dp)
+                            .width(2.dp)
+                            .background(MainColorSecondRed)
+                            .clip(
+                                RoundedCornerShape(5.dp)
+                            ))
+                        TextButton(onClick = {
+                            if (languageCode == "ru"){
+                                SystemUtil.setLocale(context.getActivity(), "en")
+                                SharedPreferencesUtil.setSharedData(context.getActivity(), SharedPreferencesKeys.PREF_LOCALE_LANGUAGE,"en")
+                            }
+                        }) {
+                            Text(text = "En", fontSize = 20.sp, color = if(languageCode=="en") MainColorSecondRed else Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                Box(modifier = Modifier.fillMaxWidth()){
                 Text(modifier = Modifier.align(Alignment.CenterStart), text = stringResource(R.string.enable_notifications), style = MainFont, textAlign = TextAlign.Center)
                 Switch(
                     modifier = Modifier.align(Alignment.CenterEnd),
@@ -152,9 +187,10 @@ fun SettingsContent(){
                     }
                 }
                 .alpha(if (checked) 1f else 0.65f)
-            val alarmManager = NotificationsAlarmManager(context)
             Box(modifier = boxModifier){
-                Text(modifier = Modifier.align(Alignment.CenterStart).padding(start = 5.dp), text = stringResource(R.string.start_hour), style = MainFontMedium, textAlign = TextAlign.Center)
+                Text(modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 5.dp), text = stringResource(R.string.start_hour), style = MainFontMedium, textAlign = TextAlign.Center)
                 NumberPicker(
                     modifier = Modifier
                         .wrapContentWidth()
@@ -171,7 +207,9 @@ fun SettingsContent(){
                 )
             }
             Box(modifier = boxModifier){
-                Text(modifier = Modifier.align(Alignment.CenterStart).padding(start = 5.dp), text = stringResource(R.string.end_hour), style = MainFontMedium, textAlign = TextAlign.Center)
+                Text(modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 5.dp), text = stringResource(R.string.end_hour), style = MainFontMedium, textAlign = TextAlign.Center)
                 NumberPicker(
                     modifier = Modifier
                         .wrapContentWidth()
@@ -187,7 +225,28 @@ fun SettingsContent(){
                     }
                 )
             }
-            Log.e("Erre","$start $end")
+            Spacer(modifier = Modifier.height(40.dp))
+            val records = remember {
+                mutableStateOf(emptyList<ExcelRecord>())
+            }
+            val scope = rememberCoroutineScope()
+            Button(onClick = {
+                val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
+                val filePath = directory + "/One hour data backup.xls"
+                val file = File(filePath)
+                val headers = listOf(context.resources.getString(R.string.color), context.resources.getString(R.string.category), context.resources.getString(R.string.activity), context.resources.getString(R.string.date_and_time))
+                scope.launch {
+                    records.value = activityRecordViewModel.getActivityRecordsForExcel().first()
+                    ExcelFileMaker.writeXLSFile(file, records.value, headers)
+                }
+
+            }) {
+                Row{
+                    Icon(imageVector = Icons.Default.TableView, contentDescription = null)
+                    Text(stringResource(R.string.import_to_excel))
+                }
+
+            }
         }
     }
 }
