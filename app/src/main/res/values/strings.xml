@@ -84,4 +84,5 @@
     <string name="language">Language:</string>
     <string name="import_to_excel">Import to Excel</string>
     <string name="add_last_activity">Add last activity</string>
+    <string name="record">Record</string>
 </resources>

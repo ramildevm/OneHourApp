@@ -6,6 +6,8 @@ import java.util.Calendar
 import java.util.Locale
 
 object CalendarUtil {
+    const val DAY_MILLIS = 24 * 60 * 60 * 1000L
+    const val HOUR_MILLIS = 60 * 60 * 1000L
     fun getDaysInMonth(month: Int, year: Int = getCurrentYear()): Int {
         val calendar = Calendar.getInstance()
 

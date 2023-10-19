@@ -85,4 +85,5 @@
     <string name="language">Язык:</string>
     <string name="import_to_excel">Импорт в Excel</string>
     <string name="add_last_activity">Добавить последнюю активность</string>
+    <string name="record">Запись</string>
 </resources>

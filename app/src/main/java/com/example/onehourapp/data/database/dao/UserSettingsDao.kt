@@ -28,4 +28,8 @@ interface UserSettingsDao {
             "lastAddedDate=:date " +
             "WHERE id = 1;")
     suspend fun updateUserSettingsAddingInfo(activityId:Int, date:Long)
+    @Query("UPDATE UserSettings " +
+            "SET lastAddedDate=:date " +
+            "WHERE id = 1;")
+    suspend fun updateUserSettingsAddedDate(date:Long)
 }

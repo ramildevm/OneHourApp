@@ -10,7 +10,13 @@ class UserSettingsRepository @Inject constructor(
 ){
     fun getUserSettings() = userSettingsDao.getUserSettings()
     suspend fun insertOrUpdateUserSettings(userSettings: UserSettings) = userSettingsDao.insertUpdateUserSettings(userSettings)
-    suspend fun updateUserSettingsAddingInfo(activityId:Int, date:Long) = userSettingsDao.updateUserSettingsAddingInfo(activityId, date)
+    suspend fun updateUserSettingsAddingInfo(activityId:Int, date:Long){
+        if(activityId!=-1)
+            userSettingsDao.updateUserSettingsAddingInfo(activityId, date)
+        else
+            userSettingsDao.updateUserSettingsAddedDate(date)
+
+    }
     suspend fun updateUserSettingsNotificationData(notificationStartHour:Int? = null, notificationEndHour:Int? = null) {
         if(notificationStartHour!=null)
             userSettingsDao.updateUserSettingsNotificationStart(notificationStartHour)

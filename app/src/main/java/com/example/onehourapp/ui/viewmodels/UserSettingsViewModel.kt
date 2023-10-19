@@ -18,7 +18,7 @@ class UserSettingsViewModel @Inject constructor(
             repository.insertOrUpdateUserSettings(userSettings)
         }
     }
-    fun updateUserSettingsAddingData(lasAddedActivityId:Int, lastAddedDate:Long){
+    fun updateUserSettingsAddingData(lasAddedActivityId:Int = -1, lastAddedDate:Long){
         viewModelScope.launch{
             repository.updateUserSettingsAddingInfo(lasAddedActivityId, lastAddedDate)
         }

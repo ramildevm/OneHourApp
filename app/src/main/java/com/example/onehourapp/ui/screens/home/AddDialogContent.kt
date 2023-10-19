@@ -1,8 +1,6 @@
 package com.example.onehourapp.ui.screens.home
 
 import android.app.DatePickerDialog
-import android.util.Log
-import android.widget.DatePicker
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -13,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,16 +46,16 @@ import java.util.Calendar
 
 
 sealed class AddCallerType {
-    object HOME_SCREEN : AddCallerType()
+    object HOMESCREEN : AddCallerType()
     object NOTIFICATION : AddCallerType()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AddRecordDialog(
-    date: Long = Calendar.getInstance().timeInMillis,
-    hour: Int,
-    callerType: AddCallerType,
+    date: Long = CalendarUtil.getCurrentDayMillis(),
+    hour: Int = CalendarUtil.getCurrentHour(),
+    callerType: AddCallerType = AddCallerType.HOMESCREEN,
     onDismiss: () -> Unit,
     notifyChange: (month: Int) -> Unit
 ) {
@@ -74,35 +73,34 @@ fun AddRecordDialog(
     val lastAddedDate = userSettings.lastAddedDate
     val actualDate by remember {
         when(callerType){
-            AddCallerType.HOME_SCREEN ->
-            mutableLongStateOf(
-                    if (lastAddedDate!= 0L && lastAddedDate <= date)
+            AddCallerType.HOMESCREEN ->
+                mutableLongStateOf(
+                        if (lastAddedDate!= 0L && lastAddedDate <= date)
                             userSettings.lastAddedDate
-                    else {
-                        date - if (hour == 0) 86400000L else 0L
-                    }
-                )
+                        else {
+                            date - if (hour == 0) CalendarUtil.DAY_MILLIS else 0L
+                        }
+                    )
             AddCallerType.NOTIFICATION -> mutableLongStateOf(date)
         }
     }
+    val actualHour = if(hour==0) 24 else if (actualDate!=date) 24 else hour
     val mCalendar by remember { mutableStateOf(Calendar.getInstance()) }
     mCalendar.timeInMillis = actualDate
-    mCalendar.set(Calendar.HOUR_OF_DAY, 0)
-    mCalendar.set(Calendar.MINUTE, 0)
-    mCalendar.set(Calendar.SECOND, 0)
-    mCalendar.set(Calendar.MILLISECOND, 0)
 
     var selectedDateMillis by remember {
         mutableLongStateOf(actualDate)
     }
-    var selectedActivityId by remember { mutableIntStateOf(userSettings!!.lastAddedActivityId) }
+    var selectedActivityId by remember { mutableIntStateOf(userSettings.lastAddedActivityId) }
 
-    var selectedCategoryId by remember { mutableIntStateOf(-1) }
+    var selectedCategoryId by remember { mutableIntStateOf(activityViewModel.getActivityById(
+        userSettings.lastAddedActivityId
+    )?.categoryId ?: -1) }
 
     var selectedActivityName by remember {
         mutableStateOf(
             activityViewModel.getActivityById(
-                userSettings!!.lastAddedActivityId
+                userSettings.lastAddedActivityId
             )?.name ?: ""
         )
     }
@@ -110,8 +108,8 @@ fun AddRecordDialog(
     var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
     var isAddActivity by remember { mutableStateOf(false) }
 
-    var pickerEndValue by remember { mutableIntStateOf(hour) }
-    var pickerStartValue by remember { mutableIntStateOf(if (pickerEndValue == 0) 23 else pickerEndValue - 1) }
+    var pickerStartValue by remember {mutableIntStateOf(actualHour-1)}
+    var pickerEndValue by remember {mutableIntStateOf(actualHour)}
 
 
     AlertDialog(
@@ -145,7 +143,7 @@ fun AddRecordDialog(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val mDate = remember {
+                val selectedDateString = remember {
                     mutableStateOf(
                         String.format(
                             "%02d.%02d.${mCalendar.get(Calendar.YEAR)}",
@@ -159,24 +157,27 @@ fun AddRecordDialog(
                     context,
                     { _, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
                         selectedDateMillis = CalendarUtil.getDateTimestamp(mYear, mMonth, mDayOfMonth)
-                        mDate.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
+                        selectedDateString.value = String.format("%02d.%02d.$mYear", mDayOfMonth, mMonth + 1)
                     },
                     mCalendar.get(Calendar.YEAR),
                     mCalendar.get(Calendar.MONTH),
                     mCalendar.get(Calendar.DAY_OF_MONTH)
                 )
-                mDatePickerDialog.datePicker.maxDate = when (callerType) {
-                    AddCallerType.HOME_SCREEN ->  System.currentTimeMillis() + if(hour!=0) 1000L else -(60*60*1000*24)
-                    AddCallerType.NOTIFICATION -> selectedDateMillis + 1000L
+                mDatePickerDialog.datePicker.maxDate = when(callerType){
+                    AddCallerType.HOMESCREEN -> {
+                        if(hour==0) date - CalendarUtil.DAY_MILLIS else date
+                    }
+                    AddCallerType.NOTIFICATION -> actualDate
                 }
+
                 Box {
                     OutlinedTextField(
-                        value = mDate.value,
+                        value = selectedDateString.value,
                         colors = TextFieldDefaults.outlinedTextFieldColors(textColor = InnerTextColor),
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
-                            if(callerType == AddCallerType.HOME_SCREEN)
+                            if(callerType == AddCallerType.HOMESCREEN)
                                 IconButton(onClick = { mDatePickerDialog.show() }) {
                                     Icon(
                                         imageVector = Icons.Default.CalendarMonth,
@@ -207,13 +208,14 @@ fun AddRecordDialog(
 
                 val categories = categoryViewModel.allCategories.collectAsState(initial = emptyList())
                 var expanded by remember { mutableStateOf(false) }
+                val selectedCategory = categories.value.find { category -> category.id == selectedCategoryId }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }) {
                     Box {
-                        if (isAddActivity)
+                        if (isAddActivity) {
                             OutlinedTextField(
-                                label = { Text(text = categories.value.find { category -> category.id == selectedCategoryId }!!.name )},
+                                label = { Text(text = selectedCategory!!.name) },
                                 value = selectedActivityName,
                                 onValueChange = {
                                     if (it.length <= 50) selectedActivityName = it
@@ -228,10 +230,19 @@ fun AddRecordDialog(
                                         )
                                     }
                                 },
-                                colors = TextFieldDefaults.outlinedTextFieldColors(textColor =InnerTextColor)
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Circle,
+                                        null,
+                                        tint = Color(selectedCategory!!.color.toColorInt())
+                                    )
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(textColor = InnerTextColor)
                             )
+                        }
                         else
                             OutlinedTextField(
+                                leadingIcon = { selectedCategory?.let{ Icon(Icons.Default.Circle,null, tint= Color(selectedCategory.color.toColorInt()) )}},
                                 value = selectedActivityName,
                                 onValueChange = { },
                                 readOnly = true,
@@ -349,9 +360,10 @@ fun AddRecordDialog(
                 } else
                     Spacer(modifier = Modifier.height(16.dp))
                 key(selectedDateMillis.hashCode()) {
-                    val start =
-                        if (hour == 0 || selectedDateMillis != date) 23f else (hour - 1).toFloat()
-                    val end = if (hour == 0 || selectedDateMillis != date) 24f else hour.toFloat()
+                    println("Date selected  ms $selectedDateMillis  $date")
+                    println("Date selected ${CalendarUtil.getCurrentDay(selectedDateMillis)}  ${CalendarUtil.getCurrentHour(date)}")
+                    val start = if (selectedDateMillis != date) 23f else (hour - 1).toFloat()
+                    val end = if (selectedDateMillis != date) 24f else hour.toFloat()
                     var sliderPosition by remember { mutableStateOf(start..end) }
                     Box(Modifier.fillMaxWidth()) {
                         Text(stringResource(id = R.string.time),
@@ -874,13 +886,13 @@ fun createActivityRecord(
     startDate.set(Calendar.MILLISECOND, 0)
 
     val endDate = Calendar.getInstance()
-    endDate.timeInMillis = selectedDateMillis + if (pickerEndValue == 24) 85800000 else 0
+    endDate.timeInMillis = selectedDateMillis + if(pickerEndValue == 24) CalendarUtil.DAY_MILLIS else 0L
     endDate.set(Calendar.HOUR_OF_DAY, if (pickerEndValue == 24) 0 else pickerEndValue)
     endDate.set(Calendar.MINUTE, 0)
     endDate.set(Calendar.SECOND, 0)
     endDate.set(Calendar.MILLISECOND, 0)
 
-    for (timestamp in startDate.timeInMillis until endDate.timeInMillis + (if (hour != 0 && pickerEndValue == 24) 60 * 60 * 1000 * 24L else 0L) step 60 * 60 * 1000) {
+    for (timestamp in startDate.timeInMillis until endDate.timeInMillis step CalendarUtil.HOUR_MILLIS) {
         activityRecordViewModel.insertActivityRecord(
             ActivityRecord(
                 0,

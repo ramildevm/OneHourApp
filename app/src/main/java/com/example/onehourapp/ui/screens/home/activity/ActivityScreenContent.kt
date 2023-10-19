@@ -88,6 +88,7 @@ import com.example.onehourapp.data.models.Activity
 import com.example.onehourapp.data.models.Category
 import com.example.onehourapp.helpers.SortingHelper
 import com.example.onehourapp.ui.helpers.toHexString
+import com.example.onehourapp.ui.screens.home.AddActivityDialog
 import com.example.onehourapp.ui.theme.ActivityListItemFont
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.CardActivityColor
@@ -115,27 +116,10 @@ fun ActivityScreenContent(navController: NavHostController) {
 fun ActivitiesList() {
     val categoryVM: CategoryViewModel = hiltViewModel()
     val activityVM: ActivityViewModel = hiltViewModel()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     val categories = categoryVM.getCategories().collectAsState(
         initial = emptyList()
     )
-
-    var isAddBtnClicked by remember { mutableStateOf(false) }
-
-    if(isAddBtnClicked) {
-        AddCategoryDialog(
-            onConfirm = { name: String, color: Color ->
-                categoryVM.insertCategory(Category(0, name, color.toHexString()))
-                categoryVM.insertResult.observe(lifecycleOwner) { result ->
-                    activityVM.insertActivity(Activity(0, name, result))
-                }
-                isAddBtnClicked = false
-            },
-            onDismiss = { isAddBtnClicked = false },
-            categories = categories.value
-        )
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -170,7 +154,7 @@ fun ActivitiesList() {
                     modifier = Modifier.background(Color.Transparent).shadow(10.dp, ambientColor = Color.Black),
                     expanded = expandedCascadeList,
                     onDismissRequest = { expandedCascadeList = false }) {
-                    androidx.compose.material.DropdownMenuItem(
+                    DropdownMenuItem(
                         onClick = {
                             categoryVM.sortType = CategoryViewModel.SortType.DEFAULT
                             expandedCascadeList = false
@@ -223,43 +207,21 @@ fun ActivitiesList() {
                 .padding(vertical = 4.dp)
         ) {
             itemsIndexed(items = categories.value) { _, category ->
-                    var expanded by remember {
-                        mutableStateOf(false)
-                    }
-                    Card(
-                        backgroundColor = Color.DarkGray,
-                        modifier = Modifier
-                            .padding(vertical = 4.dp, horizontal = 8.dp)
-                            .clickable {
-                                expanded = !expanded
-                            },
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        CategoryCardContent(category, categoryVM, activityVM, expanded) { expanded = !expanded }
-                    }
-
-            }
-            item {
+                var expanded by remember {
+                    mutableStateOf(false)
+                }
                 Card(
-                    shape = RoundedCornerShape(10.dp),
                     backgroundColor = Color.DarkGray,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
-                    elevation = 4.dp) {
-                    IconButton(onClick = { isAddBtnClicked = true },  modifier= Modifier.align(Alignment.CenterHorizontally)) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp)){
-                            Text(text = stringResource(R.string.add),
-                                textAlign = TextAlign.Center,
-                                style = CategoryListItemFont.copy(fontWeight = FontWeight.ExtraBold)
-                            )
-                        }
-                    }
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                        .clickable {
+                            expanded = !expanded
+                        },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    CategoryCardContent(category, categoryVM, activityVM, expanded) { expanded = !expanded }
                 }
+
             }
         }
     }
@@ -313,7 +275,7 @@ fun CategoryCardContent(
             val activities = activityVM.getActivities(category.id).collectAsState(initial = emptyList())
             val categories = categoryVM.allCategories.collectAsState(initial = emptyList())
             var isAddActivityDialogShowed by remember { mutableStateOf(false) }
-            var context = LocalContext.current
+            val context = LocalContext.current
 
             if(isAddActivityDialogShowed)
                 AddActivityDialog(
@@ -461,333 +423,6 @@ fun ActivityCardContent(categoryColor:String, activity: Activity) {
     }
 }
 
-@Composable
-fun AddCategoryDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, Color) -> Unit,
-    categories:List<Category>
-) {
-    Dialog(onDismissRequest = onDismiss ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp)
-                .shadow(
-                    30.dp,
-                    RoundedCornerShape(16.dp),
-                    ambientColor = Color.White,
-                    spotColor = Color.Gray
-                ),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(BackgroundColor)
-                    .wrapContentHeight(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ){
-                val colors = listOf(
-                    Color(0xFFFF0000), Color(0xFFF84D2B), Color(0xFFFF8F2C),
-                    Color(0xFFECFF00), Color(0xFF8FFF00), Color(0xFF01A92D),
-                    Color(0xFF005B18), Color(0xFF00FF85), Color(0xFF6CFFC1),
-                    Color(0xFF9DD1FF), Color(0xFF4784ED), Color(0xFF092F79),
-                    Color(0xFF082152), Color(0xFF2A0084), Color(0xFF590070),
-                    Color(0xFFB100B5), Color(0xFFFF9BFC), Color(0xFFFF00B8)
-                )
-
-                val usedColors =  categories.map {  Color(it.color.toColorInt()) }
-
-                var selectedColor by remember { mutableStateOf<Color?>(null) }
-                var text by rememberSaveable { mutableStateOf("") }
-
-                Box(
-                    Modifier
-                        .padding(5.dp)
-                        .wrapContentHeight()
-                        .fillMaxWidth()
-                        .background(BackgroundColor)) {
-                    Column(
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .background(BackgroundColor),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.add_category),
-                            style = TextFieldStyle.copy(fontWeight = FontWeight.Bold, color = MainColorSecondRed),
-                            modifier = Modifier.padding(20.dp, 4.dp)
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(id = R.string.input_name),
-                            style = TextFieldStyle,
-                            modifier = Modifier.padding(10.dp, 0.dp)
-                        )
-                        var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
-
-                        fun validate(text: String) {
-                            isTextFieldEmpty = text.isEmpty()
-                        }
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .padding(10.dp, 4.dp)
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            value = text,
-                            isError = isTextFieldEmpty,
-                            textStyle = TextFieldStyle,
-                            onValueChange = { newValue ->
-                                if(newValue.length <= 50)
-                                    text = newValue
-                                validate(text)
-                            },
-                            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = MainColorSecondRed, cursorColor = MainColorSecondRed)
-                        )
-                        if(isTextFieldEmpty){
-                            Text(
-                                text = stringResource(R.string.empty_field),
-                                color = MaterialTheme.colors.error,
-                                style = MaterialTheme.typography.caption,
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .height(18.dp)
-                            )
-                        }
-                        else
-                            Spacer(Modifier.height(18.dp))
-                        Text(
-                            text = stringResource(R.string.select_a_color),
-                            style = TextFieldStyle,
-                            modifier = Modifier.padding(10.dp, 0.dp)
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        var isColorNotSelected by rememberSaveable { mutableStateOf(false) }
-                        repeat(4) { rowIndex ->
-                            Row(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(vertical = 1.dp)
-                                    .wrapContentWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                repeat(5) { columnIndex ->
-                                    val index = rowIndex * 5 + columnIndex
-                                    val color = colors.getOrNull(index)
-                                    var used = false
-                                    if (usedColors.find { it == color } != null)
-                                        used = true
-
-                                    if (color != null) {
-                                        ColorButton(
-                                            color = color,
-                                            isUsed = used,
-                                            isSelected = selectedColor == color,
-                                            alpha = if (used) 0.5f else 1f,
-                                            onClick = {
-                                                if (used)
-                                                    return@ColorButton
-                                                if (selectedColor == color) {
-                                                    selectedColor = null
-                                                } else {
-                                                    isColorNotSelected = false
-                                                    selectedColor = color
-                                                }
-                                            }
-                                        )
-                                    }
-                                    else
-                                        Spacer(modifier = Modifier.size(44.dp))
-                                }
-
-                            }
-                        }
-                        if(isColorNotSelected){
-                            Text(
-                                text = stringResource(R.string.color_is_not_selected),
-                                color = MaterialTheme.colors.error,
-                                style = MaterialTheme.typography.caption,
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .height(18.dp)
-                            )
-                        }
-                        else
-                            Spacer(Modifier.height(18.dp))
-
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp)) {
-                            TextButton(onClick = {
-                                 if(text.isNotEmpty() && selectedColor!=null){
-                                     onConfirm(text.trim(), selectedColor!!)
-                                 }
-                                if(text.isEmpty()){
-                                    isTextFieldEmpty = true
-                                }
-                                if(selectedColor==null ){
-                                    isColorNotSelected = true
-                                }},
-                                Modifier.align(Alignment.CenterStart)) {
-                                Text(stringResource(id = R.string.add), fontSize = 16.sp, color = MainColorSecondRed)
-                            }
-                            TextButton(onClick = onDismiss, Modifier.align(Alignment.CenterEnd)) {
-                                Text(stringResource(id = R.string.cancel), fontSize = 16.sp, color = Color.White)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun AddActivityDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, Int) -> Unit,
-    categories: State<List<Category>>,
-    category: Category
-) {
-    Dialog(onDismissRequest = onDismiss ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp)
-                .shadow(
-                    30.dp,
-                    RoundedCornerShape(16.dp),
-                    ambientColor = Color.White,
-                    spotColor = Color.Gray
-                ),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(BackgroundColor)
-                    .wrapContentHeight(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ){
-                var selectedCategory by remember { mutableStateOf(category) }
-                var text by rememberSaveable { mutableStateOf("") }
-                var expanded by remember { mutableStateOf(false) }
-
-                Box(
-                    Modifier
-                        .padding(5.dp)
-                        .wrapContentHeight()
-                        .fillMaxWidth()
-                        .background(BackgroundColor)) {
-                    Column(
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .background(BackgroundColor),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.add_activity),
-                            style = TextFieldStyle.copy(fontWeight = FontWeight.Bold, color = MainColorSecondRed),
-                            modifier = Modifier.padding(20.dp, 4.dp)
-                        )
-                        Spacer(Modifier.height(4.dp))
-
-                        Text(
-                            text = stringResource(R.string.category)+":",
-                            style = TextFieldStyle,
-                            modifier = Modifier.padding(14.dp, 0.dp)
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {expanded = !expanded}, modifier = Modifier.padding(horizontal = 10.dp)) {
-                            TextField(
-                                value = selectedCategory.name,
-                                onValueChange = {},
-                                readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                )
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                categories.value.forEach { item ->
-                                    DropdownMenuItem(
-                                        content = { Text(text = item.name) },
-                                        onClick = {
-                                            selectedCategory = item
-                                            expanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        Text(
-                            text = stringResource(id = R.string.input_name),
-                            style = TextFieldStyle,
-                            modifier = Modifier.padding(14.dp, 0.dp)
-                        )
-
-                        var isTextFieldEmpty by rememberSaveable { mutableStateOf(false) }
-                        fun validate(text: String) {
-                            isTextFieldEmpty = text.isEmpty()
-                        }
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .padding(10.dp, 4.dp)
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            value = text,
-                            isError = isTextFieldEmpty,
-                            textStyle = TextFieldStyle,
-                            onValueChange = { newValue ->
-                                if(newValue.length <= 50)
-                                    text = newValue
-                                validate(text)
-                            },
-                            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = MainColorSecondRed, cursorColor = MainColorSecondRed)
-                        )
-                        if(isTextFieldEmpty){
-                            Text(
-                                text = stringResource(R.string.empty_field),
-                                color = MaterialTheme.colors.error,
-                                style = MaterialTheme.typography.caption,
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .height(18.dp)
-                            )
-                        }
-                        else
-                            Spacer(Modifier.height(16.dp))
-
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp)) {
-                            TextButton(onClick = {
-                                 if(text.isNotEmpty()){
-                                     onConfirm(text, selectedCategory.id)
-                                 }
-                                if(text.isEmpty()){
-                                    isTextFieldEmpty = true
-                                }},
-                                Modifier.align(Alignment.CenterStart)) {
-                                Text(stringResource(id = R.string.add), fontSize = 16.sp, color = MainColorSecondRed)
-                            }
-                            TextButton(onClick = onDismiss, Modifier.align(Alignment.CenterEnd)) {
-                                Text(stringResource(id = R.string.cancel), fontSize = 16.sp, color = Color.White)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun DeleteActivityAlertDialog(dialogMessage: String, onDelete: () -> Unit, onDismiss: () -> Unit) {
