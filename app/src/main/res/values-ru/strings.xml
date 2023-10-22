@@ -38,7 +38,7 @@
     <string name="work">Работа</string>
     <string name="year_stats">Статистика</string>
     <string name="calendar">Календарь</string>
-    <string name="activity">Активности</string>
+    <string name="activity">Активность</string>
     <string name="settings">Настройки</string>
     <string name="delete_message_activity_has_records">Удаление этой активности приведет к удалению записей активности.</string>
     <string name="delete_message_activity_is_single">Удаление этой активности приведет к удалению категории.</string>
@@ -86,4 +86,7 @@
     <string name="import_to_excel">Импорт в Excel</string>
     <string name="add_last_activity">Добавить последнюю активность</string>
     <string name="record">Запись</string>
+    <string name="backup_with_drive">Сохранить в Google Drive</string>
+    <string name="sync">Синхронизировать</string>
+    <string name="activities">Активности</string>
 </resources>

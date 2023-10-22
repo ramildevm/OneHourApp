@@ -129,7 +129,7 @@ fun ActivitiesList() {
         Box(modifier = Modifier
             .fillMaxWidth()) {
             Text(
-                text = stringResource(id = R.string.activity),
+                text = stringResource(id = R.string.activities),
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.Center)
@@ -227,7 +227,6 @@ fun ActivitiesList() {
     }
 }
 
-//Todo: updating https://www.youtube.com/watch?v=QCSJfMqQY9A
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CategoryCardContent(

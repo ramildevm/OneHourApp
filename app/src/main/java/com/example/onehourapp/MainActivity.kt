@@ -1,5 +1,6 @@
 package com.example.onehourapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,14 +13,21 @@ import com.example.onehourapp.helpers.NotificationsAlarmManager
 import com.example.onehourapp.ui.graphs.RootNavigationGraph
 import com.example.onehourapp.ui.theme.OneHourAppTheme
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
+import com.example.onehourapp.utils.CalendarUtil
 import com.example.onehourapp.utils.SharedPreferencesUtil
 import com.example.onehourapp.utils.SystemUtil
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.Scope
+import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val settingsVM:UserSettingsViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val alarmManager = NotificationsAlarmManager(applicationContext)
@@ -30,6 +38,8 @@ class MainActivity : ComponentActivity() {
         val localeLanguage = SharedPreferencesUtil.getSharedStringData(this, SharedPreferencesKeys.PREF_LOCALE_LANGUAGE)
         if(languageCode!=localeLanguage)
             SystemUtil.setLocale(this, localeLanguage)
+
+        settingsVM.updateUserSettingsAddingData(lastAddedDate = CalendarUtil.getHourCheckedCurrentDayMillis())
         setContent {
             OneHourAppTheme(darkTheme = true) {
                 RootNavigationGraph(navController = rememberNavController())
@@ -45,3 +55,4 @@ fun DefaultPreview() {
         RootNavigationGraph(navController = rememberNavController())
     }
 }
+

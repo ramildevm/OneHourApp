@@ -2,16 +2,15 @@ package com.example.onehourapp.ui.screens.home.settings
 
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RenderEffect
 import android.os.Build
-import android.os.Environment
-import android.widget.ImageButton
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -26,9 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
@@ -36,13 +33,12 @@ import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.TableView
+import androidx.compose.material.icons.filled.DriveFolderUpload
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,34 +55,59 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.onehourapp.R
-import com.example.onehourapp.data.models.dto.ExcelRecord
 import com.example.onehourapp.data.preferences.SharedPreferencesKeys
+import com.example.onehourapp.helpers.GoogleDriveHelper
 import com.example.onehourapp.helpers.NotificationChannelBuilder
-import com.example.onehourapp.helpers.NotificationsAlarmManager
 import com.example.onehourapp.ui.components.NumberPicker
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.ui.theme.MainFontMedium
-import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
-import com.example.onehourapp.utils.ExcelFileMaker
 import com.example.onehourapp.utils.SharedPreferencesUtil
 import com.example.onehourapp.utils.SystemUtil
 import com.example.onehourapp.utils.SystemUtil.getActivity
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import java.io.File
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.Scope
+import com.google.android.gms.tasks.Task
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import java.util.Collections
 import java.util.Locale
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsContent(){
-    Scaffold(modifier = Modifier.background(BackgroundColor)) {
+    Scaffold(modifier = Modifier.background(BackgroundColor)) { it ->
         val userSettingsViewModel:UserSettingsViewModel = hiltViewModel()
-        val activityRecordViewModel:ActivityRecordViewModel = hiltViewModel()
         val context = LocalContext.current
+        var isSignedIn by remember {
+            mutableStateOf(false)
+        }
+        val startForResult = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = result.data
+                if (result.data != null) {
+                    val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(intent)
+                    task.addOnSuccessListener {
+                        Toast.makeText(context, "Successfully signed in", Toast.LENGTH_LONG).show()
+                        isSignedIn = true
+                    }
+                    .addOnFailureListener{
+                        Toast.makeText(context, "Cancelled", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Google Login Error!", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
         Column(
             Modifier
                 .padding(it)
@@ -226,27 +247,56 @@ fun SettingsContent(){
                 )
             }
             Spacer(modifier = Modifier.height(40.dp))
-            val records = remember {
-                mutableStateOf(emptyList<ExcelRecord>())
-            }
-            val scope = rememberCoroutineScope()
-            Button(onClick = {
-                val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
-                val filePath = directory + "/One hour data backup.xls"
-                val file = File(filePath)
-                val headers = listOf(context.resources.getString(R.string.color), context.resources.getString(R.string.category), context.resources.getString(R.string.activity), context.resources.getString(R.string.date_and_time))
-                scope.launch {
-                    records.value = activityRecordViewModel.getActivityRecordsForExcel().first()
-                    ExcelFileMaker.writeXLSFile(file, records.value, headers)
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+            if(account!=null || isSignedIn)
+                Button(onClick = {
+                    val driveHelper = GoogleDriveHelper(getGoogleDrive(context, account!!))
+                    Toast.makeText(context, account.id, Toast.LENGTH_LONG).show()
+                    Log.e("OneHourDrive", account.id!!)
+                    Log.e("OneHourDrive", account.displayName!!)
+                    //TODO сделать синхронизацию бд по id и версии (timestamp)
+                }) {
+                    Row{
+                        Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
+                        Text(stringResource(R.string.sync))
+                    }
                 }
-
-            }) {
-                Row{
-                    Icon(imageVector = Icons.Default.TableView, contentDescription = null)
-                    Text(stringResource(R.string.import_to_excel))
+            else
+                Button(onClick = {
+                    startForResult.launch(getGoogleSignInClient(context).signInIntent)
+                }) {
+                    Row{
+                        Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
+                        Text(stringResource(R.string.backup_with_drive))
+                    }
                 }
-
-            }
         }
     }
 }
+
+fun getGoogleDrive(context:Context, account: GoogleSignInAccount): Drive {
+    val credential = GoogleAccountCredential.usingOAuth2(
+        context,
+        Collections.singleton(DriveScopes.DRIVE_FILE)
+    )
+    credential.selectedAccount = account.account
+
+    val drive = Drive.Builder(
+        AndroidHttp.newCompatibleTransport(),
+        JacksonFactory.getDefaultInstance(),
+        credential
+    )
+        .setApplicationName(context.resources.getString(R.string.app_name))
+        .build()
+    return drive
+}
+
+private fun getGoogleSignInClient(context: Context): GoogleSignInClient {
+    val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestEmail()
+        .requestScopes(Scope(DriveScopes.DRIVE_FILE), Scope(DriveScopes.DRIVE))
+        .build()
+
+    return GoogleSignIn.getClient(context, signInOptions)
+}
+

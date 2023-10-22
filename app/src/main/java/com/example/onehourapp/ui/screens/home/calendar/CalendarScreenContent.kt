@@ -1,6 +1,7 @@
 package com.example.onehourapp.ui.screens.home.calendar
 
 import android.graphics.Typeface
+import android.os.Environment
 import android.text.TextUtils
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -30,7 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BackdropScaffold
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.TableView
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.runtime.Composable
@@ -76,8 +77,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -104,6 +105,7 @@ import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.onehourapp.R
 import com.example.onehourapp.data.models.ActivityRecord
 import com.example.onehourapp.data.models.Category
+import com.example.onehourapp.data.models.dto.ExcelRecord
 import com.example.onehourapp.ui.components.ClockProgressIndicator
 import com.example.onehourapp.ui.helpers.pagerFanTransition
 import com.example.onehourapp.ui.theme.ActivityListItemFont2
@@ -122,6 +124,7 @@ import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.utils.CalendarUtil
+import com.example.onehourapp.utils.ExcelFileMaker
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import kotlinx.coroutines.Dispatchers
@@ -129,6 +132,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 
 @Composable
@@ -150,6 +154,7 @@ data class RecordCountCategory(
 @Composable
 @OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
+    val context = LocalContext.current
     var isLoaded by remember {
         mutableStateOf(false)
     }
@@ -269,6 +274,9 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             .fillMaxHeight()
                     ) {
                         var expanded by remember { mutableStateOf(false) }
+                        val records = remember {
+                            mutableStateOf(emptyList<ExcelRecord>())
+                        }
                         IconButton(onClick = {
                             expanded = !expanded
                         }) {
@@ -285,6 +293,22 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                 //TODO: Color canvas
                             }) {
                                 Text(stringResource(id = R.string.edit))
+                            }
+                            DropdownMenuItem(onClick = {
+                                val directory = Environment.getExternalStoragePublicDirectory(
+                                    Environment.DIRECTORY_DOWNLOADS).toString()
+                                val filePath = "$directory/One hour data backup.xls"
+                                val file = File(filePath)
+                                val headers = listOf(context.resources.getString(R.string.color), context.resources.getString(R.string.category), context.resources.getString(R.string.activities), context.resources.getString(R.string.date_and_time))
+                                scope.launch {
+                                    records.value = activityRecordViewModel.getActivityRecordsForExcel().first()
+                                    ExcelFileMaker.writeXLSFile(file, records.value, headers)
+                                }
+                            }) {
+                                Row{
+                                    Icon(imageVector = Icons.Default.TableView, contentDescription = null)
+                                    Text(stringResource(R.string.import_to_excel))
+                                }
                             }
                         }
                     }
@@ -455,7 +479,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             CalendarUtil.getDaysInMonth(
                                 pageIndex % 12,
                                 year.value
-                            )
+                            ) + 1
                         val rows = 25
                         val spacing = 5.dp
                         val isCurrentMonth = pageIndex % 12 == CalendarUtil.getCurrentMonth()
@@ -470,13 +494,14 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                             val cellSize = (size.width - 5 * (columns + 1)) / columns
                             for (row in 0 until rows) {
                                 for (column in 0 until columns) {
-                                    val day = column + 1
-                                    val isCurrentDay = (day == CalendarUtil.getCurrentDay() && isCurrentMonth)
-                                    val isCurrentHour = (day == CalendarUtil.getCurrentDay() && isCurrentMonth && row == CalendarUtil.getCurrentHour())
+                                    val isCurrentDay =
+                                        (column == CalendarUtil.getCurrentDay() && isCurrentMonth)
+                                    val isCurrentHour = (column == CalendarUtil.getCurrentDay() && isCurrentMonth && row == CalendarUtil.getCurrentHour())
                                     val x = column * (cellSize + 5)
                                     var y = row * (cellSize + 5)
                                     val center = (columns - 1) / 2
                                     var offset = 0
+
                                     when (column) {
                                         in 0..center - 2 -> offset = column
                                         in center - 2..center + 2 -> offset = center - 2
@@ -484,9 +509,20 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                     }
                                     if (row != 0) {
                                         val record = item.find {
-                                            it.day == column + 1 && it.hour == row - 1
+                                            it.day == column && it.hour == row - 1
                                         }
-                                        y += 5
+                                        if(column==0){
+                                            drawText(
+                                                style = CalendarDayFont,
+                                                text = String.format("%02d", row - 1),
+                                                textMeasurer = textMeasurer,
+                                                topLeft = Offset(
+                                                    x - offset + spacing.toPx(),
+                                                    y + spacing.toPx()
+                                                ),
+                                            )
+                                            continue
+                                        }
                                         drawRoundRect(
                                             color = record?.color ?: Color.DarkGray,
                                             topLeft = Offset(
@@ -513,21 +549,24 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                                 ),
                                                 style = Stroke(width=1.dp.toPx())
                                             )
+
+
                                     } else {
                                         var textOffset = 0
-                                        if ((column + 1) % 10 == 0)
+                                        if ((column) % 10 == 0)
                                             textOffset = 2
                                         if (column + 1 == columns)
                                             textOffset = 4
-                                        drawText(
-                                            style = if (isCurrentDay) CalendarCurrentDayFont else CalendarDayFont,
-                                            text = "$day",
-                                            textMeasurer = textMeasurer,
-                                            topLeft = Offset(
-                                                x + spacing.toPx() - textOffset,
-                                                y - offset + spacing.toPx()
-                                            ),
-                                        )
+                                        if(column!=0)
+                                            drawText(
+                                                style = if (isCurrentDay) CalendarCurrentDayFont else CalendarDayFont,
+                                                text = "$column",
+                                                textMeasurer = textMeasurer,
+                                                topLeft = Offset(
+                                                    x + spacing.toPx() - textOffset,
+                                                    y - offset
+                                                ),
+                                            )
                                     }
 
                                 }
