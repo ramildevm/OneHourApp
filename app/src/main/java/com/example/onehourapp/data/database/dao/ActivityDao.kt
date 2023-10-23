@@ -19,7 +19,7 @@ interface ActivityDao {
     @Query("SELECT * FROM Activity WHERE id=:id LIMIT 1")
     fun getActivityById(id: Int): Activity?
 
-    @Insert
+    @Upsert
     suspend fun insertActivity(activity: Activity) :Long
 
     @Delete

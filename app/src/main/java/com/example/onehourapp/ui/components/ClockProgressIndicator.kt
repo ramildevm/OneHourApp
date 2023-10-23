@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,8 +27,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ClockProgressIndicator(isVisible:Boolean) {
-    var rotationState by remember { mutableStateOf(45f) }
-    var rotationState2 by remember { mutableStateOf(0f) }
+    var rotationState by remember { mutableFloatStateOf(45f) }
+    var rotationState2 by remember { mutableFloatStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
 
     Box(

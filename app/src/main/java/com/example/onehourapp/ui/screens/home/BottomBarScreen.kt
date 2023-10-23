@@ -31,7 +31,7 @@ sealed class BottomBarScreen(
 
     object Activity : BottomBarScreen(
         route = "ACTIVITY",
-        title = R.string.activity,
+        title = R.string.activities,
         icon = IconResource.fromImageVector(Icons.Rounded.ViewList)
     )
 

@@ -37,7 +37,8 @@
     <string name="work">Work</string>
     <string name="year_stats">Year stats</string>
     <string name="calendar">Calendar</string>
-    <string name="activity">Activities</string>
+    <string name="activity">Activity</string>
+    <string name="activities">Activities</string>
     <string name="settings">Settings</string>
     <string name="delete_message_activity_has_records">Deleting this activity will delete the activity records.</string>
     <string name="delete_message_activity_is_single">Deleting this activity will delete the category.</string>
@@ -85,4 +86,6 @@
     <string name="import_to_excel">Import to Excel</string>
     <string name="add_last_activity">Add last activity</string>
     <string name="record">Record</string>
+    <string name="backup_with_drive">Backup with Drive</string>
+    <string name="sync">Sync</string>
 </resources>

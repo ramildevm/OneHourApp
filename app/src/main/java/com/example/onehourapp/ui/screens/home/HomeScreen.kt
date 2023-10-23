@@ -110,13 +110,11 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
     val isAddMenuExtended = remember { mutableStateOf(false) }
     val categoryVM: CategoryViewModel = hiltViewModel()
     val activityVM: ActivityViewModel = hiltViewModel()
-    val settingsVM: UserSettingsViewModel = hiltViewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
     val onDismiss: () -> Unit = {
         addButtonClickType.value = AddButtonType.NONE
         isAddMenuExtended.value = false
     }
-    settingsVM.updateUserSettingsAddingData(lastAddedDate = CalendarUtil.getCurrentDayMillis())
     Scaffold(
         bottomBar = {
             BottomBar(navController = navController)

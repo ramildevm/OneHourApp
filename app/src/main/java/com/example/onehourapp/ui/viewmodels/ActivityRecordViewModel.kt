@@ -29,11 +29,11 @@ class ActivityRecordViewModel @Inject constructor(
     fun getActivityRecordByTime(year:Int, month:Int, day: Int,hour:Int) = repository.getActivityRecordByTime(year,month,day,hour)
 
     fun getActivityRecordsForExcel() = repository.getActivityRecordsForExcel()
+    fun getActivityRecords() = repository.getActivityRecords()
 
     fun insertActivityRecord(activityRecord: ActivityRecord, hour:Int=0, day:Int=0){
         viewModelScope.launch{
             repository.insertOrUpdateActivityRecord(activityRecord)
-            Log.e("Inserted", "day:$day hour: $hour activity: ${activityRecord.activityId} time = ${activityRecord.timestamp / (60*60*1000)}")
         }
     }
     fun updateActivityRecord(activityRecord: ActivityRecord){
