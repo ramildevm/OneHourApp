@@ -1,12 +1,10 @@
 package com.example.onehourapp.ui.screens.home.settings
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RenderEffect
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -21,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,11 +58,15 @@ import com.example.onehourapp.R
 import com.example.onehourapp.data.preferences.SharedPreferencesKeys
 import com.example.onehourapp.helpers.GoogleDriveHelper
 import com.example.onehourapp.helpers.NotificationChannelBuilder
+import com.example.onehourapp.ui.components.ClockProgressIndicator
 import com.example.onehourapp.ui.components.NumberPicker
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
 import com.example.onehourapp.ui.theme.MainFont
 import com.example.onehourapp.ui.theme.MainFontMedium
+import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
+import com.example.onehourapp.ui.viewmodels.ActivityViewModel
+import com.example.onehourapp.ui.viewmodels.CategoryViewModel
 import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.SharedPreferencesUtil
 import com.example.onehourapp.utils.SystemUtil
@@ -87,12 +91,19 @@ import java.util.Locale
 fun SettingsContent(){
     Scaffold(modifier = Modifier.background(BackgroundColor)) { it ->
         val userSettingsViewModel:UserSettingsViewModel = hiltViewModel()
+        val categoryViewModel:CategoryViewModel = hiltViewModel()
+        val activityViewModel:ActivityViewModel = hiltViewModel()
+        val activityRecordViewModel:ActivityRecordViewModel = hiltViewModel()
         val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        var isSyncing by remember {
+            mutableStateOf(false)
+        }
         var isSignedIn by remember {
             mutableStateOf(false)
         }
         val startForResult = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val intent = result.data
                 if (result.data != null) {
                     val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(intent)
@@ -108,6 +119,7 @@ fun SettingsContent(){
                 }
             }
         }
+
         Column(
             Modifier
                 .padding(it)
@@ -250,11 +262,12 @@ fun SettingsContent(){
             val account = GoogleSignIn.getLastSignedInAccount(context)
             if(account!=null || isSignedIn)
                 Button(onClick = {
+                    isSyncing = true
                     val driveHelper = GoogleDriveHelper(getGoogleDrive(context, account!!))
-                    Toast.makeText(context, account.id, Toast.LENGTH_LONG).show()
-                    Log.e("OneHourDrive", account.id!!)
-                    Log.e("OneHourDrive", account.displayName!!)
-                    //TODO сделать синхронизацию бд по id и версии (timestamp)
+                    driveHelper.syncWithDrive(context, scope, account.id!!, categoryViewModel, activityViewModel, activityRecordViewModel){
+                        isSyncing = false
+                    }
+
                 }) {
                     Row{
                         Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
@@ -271,24 +284,42 @@ fun SettingsContent(){
                     }
                 }
         }
+        if (isSyncing)
+            Box(
+                Modifier
+                    .fillMaxSize()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                        .alpha(0.5f)
+                )
+                Row(Modifier.fillMaxWidth().align(Alignment.Center), verticalAlignment = Alignment.CenterVertically){
+                    Box(Modifier.size(100.dp)) {
+                        ClockProgressIndicator(!isSyncing)
+                    }
+                    Text(text = "Syncing.. PLease wait", style = MainFont.copy(color = Color.White), fontSize = 16.sp)
+                }
+            }
     }
 }
 
-fun getGoogleDrive(context:Context, account: GoogleSignInAccount): Drive {
+
+fun getGoogleDrive(context: Context, account: GoogleSignInAccount): Drive {
     val credential = GoogleAccountCredential.usingOAuth2(
         context,
         Collections.singleton(DriveScopes.DRIVE_FILE)
     )
     credential.selectedAccount = account.account
 
-    val drive = Drive.Builder(
+    return Drive.Builder(
         AndroidHttp.newCompatibleTransport(),
         JacksonFactory.getDefaultInstance(),
         credential
     )
         .setApplicationName(context.resources.getString(R.string.app_name))
         .build()
-    return drive
 }
 
 private fun getGoogleSignInClient(context: Context): GoogleSignInClient {
