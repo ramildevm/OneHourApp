@@ -13,6 +13,7 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -20,13 +21,16 @@ import kotlinx.coroutines.launch
 import okio.IOException
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.net.UnknownHostException
 import java.util.Collections
 import java.util.concurrent.Executors
 
 
 class GoogleDriveHelper (
     private val mDriveService: Drive) {
-    private val mExecutor = Executors.newSingleThreadExecutor()
+    private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
+        throwable.printStackTrace()
+    }
     fun syncWithDrive(
         context: Context,
         scope: CoroutineScope,
@@ -34,9 +38,9 @@ class GoogleDriveHelper (
         categoryViewModel: CategoryViewModel,
         activityViewModel: ActivityViewModel,
         activityRecordViewModel: ActivityRecordViewModel,
-        onFinish: () -> Unit
+        onFinish: (result: ResponseResult) -> Unit
     ) {
-        scope.launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             val additionalFolderId = "OneHour_backups_folder_$accountId"
             val additionalFileId = "OneHour_backups_file_$accountId"
             val file = checkSaved(additionalFileId)
@@ -73,11 +77,12 @@ class GoogleDriveHelper (
                 mDriveService.Files().create(gFile, fileContent).execute()
 
                 java.io.File(dbFile.path).delete()
+                onFinish(ResponseResult.SUCCESS)
             } catch (exception: IOException) {
                 exception.printStackTrace()
                 Log.e("Error occurred. ", exception.message!!)
+                onFinish(ResponseResult.ERROR)
             }
-            onFinish()
         }
     }
 
@@ -85,22 +90,27 @@ class GoogleDriveHelper (
         val files: MutableList<File> = ArrayList()
         var pageToken: String? = null
         do {
-            val result: FileList = mDriveService.files().list()
-                .setQ("appProperties has { key='additionalID' and value='$additionalId' }")
-                .setPageToken(pageToken)
-                .execute()
-            files.addAll(result.files)
-            println(files.size)
-            pageToken = result.nextPageToken
+            try {
+                val result: FileList = mDriveService.files().list()
+                    .setQ("appProperties has { key='additionalID' and value='$additionalId' }")
+                    .setPageToken(pageToken)
+                    .execute()
+                files.addAll(result.files)
+                println(files.size)
+                pageToken = result.nextPageToken
+            }
+            catch (e: UnknownHostException){
+                e.printStackTrace()
+                return null
+            }
         } while (pageToken != null)
-
         return files.lastOrNull()
     }
 
     private fun saveDataToDb(file: File, categoryViewModel: CategoryViewModel, activityViewModel: ActivityViewModel, activityRecordViewModel: ActivityRecordViewModel) {
         val gson = Gson()
         val outputStream: OutputStream = ByteArrayOutputStream()
-        mDriveService.files().get(file.id).executeMediaAndDownloadTo(outputStream);
+        mDriveService.files().get(file.id).executeMediaAndDownloadTo(outputStream)
 
         try {
             val data = (outputStream as ByteArrayOutputStream).toByteArray()
@@ -124,5 +134,9 @@ class GoogleDriveHelper (
             e.printStackTrace()
         }
     }
-
+    enum class ResponseResult{
+        DEFAULT,
+        SUCCESS,
+        ERROR
+    }
 }

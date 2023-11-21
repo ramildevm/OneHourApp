@@ -88,4 +88,5 @@
     <string name="record">Record</string>
     <string name="backup_with_drive">Backup with Drive</string>
     <string name="sync">Sync</string>
+    <string name="syncing_please_wait">Syncing.. PLease wait</string>
 </resources>

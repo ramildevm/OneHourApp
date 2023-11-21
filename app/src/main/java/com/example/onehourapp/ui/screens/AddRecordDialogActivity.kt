@@ -59,4 +59,19 @@ class AddRecordDialogActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        println("onehourlife d resume")
+        super.onResume()
+    }
+
+    override fun onStop() {
+        println("onehourlife d stop")
+        super.onStop()
+    }
+
+    override fun onPause() {
+        println("onehourlife d pause")
+        super.onPause()
+    }
+
 }

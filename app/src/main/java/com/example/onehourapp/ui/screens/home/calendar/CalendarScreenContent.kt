@@ -969,7 +969,7 @@ fun CalendarBackdropScaffold(changedMonth: MutableState<Int>) {
                                                             .padding(bottom = 3.dp, end = 10.dp)
                                                             .align(Alignment.CenterVertically)
                                                             .wrapContentHeight()
-                                                            .weight(.75f), text= activity.name + ":", fontWeight = FontWeight.Medium)
+                                                            .weight(.75f), text= activity.name, fontWeight = FontWeight.Medium)
                                                         Text(modifier = Modifier
                                                             .align(Alignment.CenterVertically)
                                                             .alpha(.75f),text = String.format("%02d:00 - %02d:00"

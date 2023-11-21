@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -36,6 +37,7 @@ import com.example.onehourapp.data.models.UserSettings
 import com.example.onehourapp.ui.theme.BackgroundColor
 import com.example.onehourapp.ui.theme.InnerTextColor
 import com.example.onehourapp.ui.theme.MainColorSecondRed
+import com.example.onehourapp.ui.theme.OneHourAppTheme
 import com.example.onehourapp.ui.viewmodels.ActivityRecordViewModel
 import com.example.onehourapp.ui.viewmodels.ActivityViewModel
 import com.example.onehourapp.ui.viewmodels.CategoryViewModel
@@ -382,10 +384,12 @@ fun AddRecordDialog(
                         onValueChange = {
                             sliderPosition = if (it.start < it.endInclusive)
                                 it
+                            else if(it.start == it.endInclusive && it.start != end)
+                                it.start..(it.start + 1)
                             else
-                                it.endInclusive - 1..it.endInclusive
+                                (it.endInclusive - 1)..it.endInclusive
                             if (it.start == it.endInclusive && it.endInclusive == 0f)
-                                sliderPosition = it.start..it.start + 1
+                                sliderPosition = it.start..(it.start + 1)
                         },
                         valueRange = 0f..end,
                         onValueChangeFinished = {
@@ -429,7 +433,6 @@ fun AddRecordDialog(
                         )
                         activityViewModel.insertResult.observe(lifecycleOwner) { activityId ->
                             createActivityRecord(
-                                hour,
                                 selectedDateMillis,
                                 pickerStartValue,
                                 pickerEndValue,
@@ -440,7 +443,6 @@ fun AddRecordDialog(
                         }
                     } else {
                         createActivityRecord(
-                            hour,
                             selectedDateMillis,
                             pickerStartValue,
                             pickerEndValue,
@@ -869,7 +871,6 @@ fun createActivityRecord2(
 }
 
 fun createActivityRecord(
-    hour: Int,
     selectedDateMillis: Long,
     pickerStartValue: Int,
     pickerEndValue: Int,
@@ -877,7 +878,6 @@ fun createActivityRecord(
     userSettingsViewModel: UserSettingsViewModel,
     selectedActivityId: Int
 ) {
-    //FIXME 23-24 сохранение
     val startDate = Calendar.getInstance()
     startDate.timeInMillis = selectedDateMillis
     startDate.set(Calendar.HOUR_OF_DAY, pickerStartValue)

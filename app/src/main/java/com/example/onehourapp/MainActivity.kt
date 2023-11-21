@@ -16,11 +16,6 @@ import com.example.onehourapp.ui.viewmodels.UserSettingsViewModel
 import com.example.onehourapp.utils.CalendarUtil
 import com.example.onehourapp.utils.SharedPreferencesUtil
 import com.example.onehourapp.utils.SystemUtil
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.Scope
-import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
@@ -28,6 +23,7 @@ import java.util.Locale
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val settingsVM:UserSettingsViewModel by viewModels()
+    val num:Int = 4
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val alarmManager = NotificationsAlarmManager(applicationContext)

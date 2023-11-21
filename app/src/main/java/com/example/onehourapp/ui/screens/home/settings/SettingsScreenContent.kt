@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -34,6 +35,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DriveFolderUpload
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +84,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import kotlinx.coroutines.delay
 import java.util.Collections
 import java.util.Locale
 
@@ -119,36 +122,41 @@ fun SettingsContent(){
                 }
             }
         }
-
-        Column(
+        Box(
             Modifier
-                .padding(it)
+                .fillMaxSize()
                 .background(BackgroundColor)
-                .padding(horizontal = 16.dp)
-                .fillMaxSize()) {
+        ){
+            Column(
+                Modifier
+                    .padding(it)
+                    .background(BackgroundColor)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize())
+            {
 
-            val flag = NotificationChannelBuilder.isNotificationChannelEnabled(context)
-            var checked by remember {
-                mutableStateOf(flag)
-            }
+                val flag = NotificationChannelBuilder.isNotificationChannelEnabled(context)
+                var checked by remember {
+                    mutableStateOf(flag)
+                }
 
-            val userSettings = userSettingsViewModel.getUserSettings()
-            val start = userSettings.notificationStartHour
-            val end = userSettings.notificationEndHour
-            var pickerStartValue by remember { mutableIntStateOf(start) }
-            var pickerEndValue by remember { mutableIntStateOf(end) }
-            Text(
-                text = stringResource(id = R.string.settings),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp)
-                    .background(
-                        BackgroundColor
-                    ),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
-                color = Color.Red
-            )
+                val userSettings = userSettingsViewModel.getUserSettings()
+                val start = userSettings.notificationStartHour
+                val end = userSettings.notificationEndHour
+                var pickerStartValue by remember { mutableIntStateOf(start) }
+                var pickerEndValue by remember { mutableIntStateOf(end) }
+                Text(
+                    text = stringResource(id = R.string.settings),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .background(
+                            BackgroundColor
+                        ),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
+                    color = Color.Red
+                )
                 Box(modifier = Modifier.fillMaxWidth()) {
                     val currentLocale = Locale.getDefault()
                     val languageCode = currentLocale.language
@@ -185,123 +193,161 @@ fun SettingsContent(){
                     }
                 }
                 Box(modifier = Modifier.fillMaxWidth()){
-                Text(modifier = Modifier.align(Alignment.CenterStart), text = stringResource(R.string.enable_notifications), style = MainFont, textAlign = TextAlign.Center)
-                Switch(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    checked = checked,
-                    colors = SwitchDefaults.colors(uncheckedThumbColor = Color.DarkGray),
-                    onCheckedChange = { flag ->
-                        if (flag)
-                            NotificationChannelBuilder.createNotificationChannel(context)
-                        else
-                            NotificationChannelBuilder.deleteNotificationChannel(context)
-                        checked = flag
-                    }
-                )
-            }
-            val boxModifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        val effect = RenderEffect.createColorFilterEffect(
-                            ColorMatrixColorFilter(
-                                ColorMatrix(
-                                    floatArrayOf(
-                                        0.3f, 0.3f, 0.3f, 0f, 0f,
-                                        0.3f, 0.3f, 0.3f, 0f, 0f,
-                                        0.3f, 0.3f, 0.3f, 0f, 0f,
-                                        0f, 0f, 0f, 1f, 0f
+                    Text(modifier = Modifier.align(Alignment.CenterStart), text = stringResource(R.string.enable_notifications), style = MainFont, textAlign = TextAlign.Center)
+                    Switch(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        checked = checked,
+                        colors = SwitchDefaults.colors(uncheckedThumbColor = Color.DarkGray),
+                        onCheckedChange = { flag ->
+                            if (flag)
+                                NotificationChannelBuilder.createNotificationChannel(context)
+                            else
+                                NotificationChannelBuilder.deleteNotificationChannel(context)
+                            checked = flag
+                        }
+                    )
+                }
+                val boxModifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            val effect = RenderEffect.createColorFilterEffect(
+                                ColorMatrixColorFilter(
+                                    ColorMatrix(
+                                        floatArrayOf(
+                                            0.3f, 0.3f, 0.3f, 0f, 0f,
+                                            0.3f, 0.3f, 0.3f, 0f, 0f,
+                                            0.3f, 0.3f, 0.3f, 0f, 0f,
+                                            0f, 0f, 0f, 1f, 0f
+                                        )
                                     )
                                 )
                             )
-                        )
-                        if (!checked)
-                            renderEffect = effect.asComposeRenderEffect()
+                            if (!checked)
+                                renderEffect = effect.asComposeRenderEffect()
+                        }
+                    }
+                    .alpha(if (checked) 1f else 0.65f)
+                Box(modifier = boxModifier){
+                    Text(modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 5.dp), text = stringResource(R.string.start_hour), style = MainFontMedium, textAlign = TextAlign.Center)
+                    NumberPicker(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .align(Alignment.CenterEnd),
+                        value = pickerStartValue,
+                        range = 0..23,
+                        dividersColor = MainColorSecondRed,
+                        textStyle = MainFont,
+                        enabled = checked,
+                        onValueChange = { value ->
+                            pickerStartValue = value
+                            userSettingsViewModel.updateUserSettingsNotificationSleepStart(value)
+                        }
+                    )
+                }
+                Box(modifier = boxModifier){
+                    Text(modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 5.dp), text = stringResource(R.string.end_hour), style = MainFontMedium, textAlign = TextAlign.Center)
+                    NumberPicker(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .align(Alignment.CenterEnd),
+                        value = pickerEndValue,
+                        range = 1..24,
+                        dividersColor = MainColorSecondRed,
+                        textStyle = MainFont,
+                        enabled = checked,
+                        onValueChange = { value ->
+                            pickerEndValue = value
+                            userSettingsViewModel.updateUserSettingsNotificationSleepEnd(value)
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(40.dp))
+                val account = GoogleSignIn.getLastSignedInAccount(context)
+                if(account!=null || isSignedIn) {
+                    var responseResult by remember{
+                        mutableStateOf(GoogleDriveHelper.ResponseResult.DEFAULT)
+                    }
+                    Button(onClick = {
+                        isSyncing = true
+                        val driveHelper = GoogleDriveHelper(getGoogleDrive(context, account!!))
+                        driveHelper.syncWithDrive(
+                            context,
+                            scope,
+                            account.id!!,
+                            categoryViewModel,
+                            activityViewModel,
+                            activityRecordViewModel
+                        ) { result ->
+                            isSyncing = false
+                            responseResult = result
+                        }
+                    }
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.DriveFolderUpload,
+                                contentDescription = null
+                            )
+                            Text(stringResource(R.string.sync))
+                        }
+                    }
+                    LaunchedEffect(key1 = responseResult){
+                        when(responseResult){
+                            GoogleDriveHelper.ResponseResult.DEFAULT -> {}
+                            GoogleDriveHelper.ResponseResult.SUCCESS -> Toast.makeText(context, "Data synced", Toast.LENGTH_SHORT).show()
+                            GoogleDriveHelper.ResponseResult.ERROR -> Toast.makeText(context, "Internal server error", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
-                .alpha(if (checked) 1f else 0.65f)
-            Box(modifier = boxModifier){
-                Text(modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 5.dp), text = stringResource(R.string.start_hour), style = MainFontMedium, textAlign = TextAlign.Center)
-                NumberPicker(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .align(Alignment.CenterEnd),
-                    value = pickerStartValue,
-                    range = 0..23,
-                    dividersColor = MainColorSecondRed,
-                    textStyle = MainFont,
-                    enabled = checked,
-                    onValueChange = { value ->
-                        pickerStartValue = value
-                        userSettingsViewModel.updateUserSettingsNotificationSleepStart(value)
+                else
+                    Button(onClick = {
+                        startForResult.launch(getGoogleSignInClient(context).signInIntent)
+                    }) {
+                        Row{
+                            Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
+                            Text(stringResource(R.string.backup_with_drive))
+                        }
                     }
-                )
             }
-            Box(modifier = boxModifier){
-                Text(modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 5.dp), text = stringResource(R.string.end_hour), style = MainFontMedium, textAlign = TextAlign.Center)
-                NumberPicker(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .align(Alignment.CenterEnd),
-                    value = pickerEndValue,
-                    range = 1..24,
-                    dividersColor = MainColorSecondRed,
-                    textStyle = MainFont,
-                    enabled = checked,
-                    onValueChange = { value ->
-                        pickerEndValue = value
-                        userSettingsViewModel.updateUserSettingsNotificationSleepEnd(value)
-                    }
-                )
-            }
-            Spacer(modifier = Modifier.height(40.dp))
-            val account = GoogleSignIn.getLastSignedInAccount(context)
-            if(account!=null || isSignedIn)
-                Button(onClick = {
-                    isSyncing = true
-                    val driveHelper = GoogleDriveHelper(getGoogleDrive(context, account!!))
-                    driveHelper.syncWithDrive(context, scope, account.id!!, categoryViewModel, activityViewModel, activityRecordViewModel){
-                        isSyncing = false
-                    }
-
-                }) {
-                    Row{
-                        Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
-                        Text(stringResource(R.string.sync))
-                    }
-                }
-            else
-                Button(onClick = {
-                    startForResult.launch(getGoogleSignInClient(context).signInIntent)
-                }) {
-                    Row{
-                        Icon(imageVector = Icons.Default.DriveFolderUpload, contentDescription = null)
-                        Text(stringResource(R.string.backup_with_drive))
-                    }
-                }
-        }
-        if (isSyncing)
-            Box(
-                Modifier
-                    .fillMaxSize()
-            ) {
+            if (isSyncing) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black)
-                        .alpha(0.5f)
-                )
-                Row(Modifier.fillMaxWidth().align(Alignment.Center), verticalAlignment = Alignment.CenterVertically){
-                    Box(Modifier.size(100.dp)) {
-                        ClockProgressIndicator(!isSyncing)
+                        .background(Color.Black.copy(0.5f))
+                ) {
+                    Row(
+                        Modifier
+                            .background(Color.Unspecified)
+                            .wrapContentSize()
+                            .align(Alignment.Center),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(Modifier.size(100.dp)) {
+                            ClockProgressIndicator(!isSyncing)
+                        }
+                        Text(
+                            text = stringResource(R.string.syncing_please_wait),
+                            style = MainFont.copy(color = Color.White),
+                            fontSize = 16.sp
+                        )
+
                     }
-                    Text(text = "Syncing.. PLease wait", style = MainFont.copy(color = Color.White), fontSize = 16.sp)
+                }
+                LaunchedEffect(Unit){
+                    delay(10000)
+                    if(isSyncing) {
+                        isSyncing = false
+                        Toast.makeText(context, "Internal server error", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
+        }
+
     }
 }
 
