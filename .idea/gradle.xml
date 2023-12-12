@@ -24,7 +24,6 @@
             <option value="$PROJECT_DIR$/feature/dialog" />
             <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/yearstat" />
-            <option value="$PROJECT_DIR$/notification" />
           </set>
         </option>
       </GradleProjectSettings>
