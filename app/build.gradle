@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk targetAndroidSdk
 
     defaultConfig {
         applicationId "com.example.onehourapp"
-        minSdk 26
-        targetSdk 32
+        minSdk minAndroidSdk
+        targetSdk targetAndroidSdk
         versionCode 1
         versionName "1.0"
 
@@ -49,73 +49,73 @@ android {
 }
 
 dependencies {
+    implementation (project(":core:theme"))
+    implementation (project(":core:domain"))
+    implementation (project(":core:common"))
+    implementation (project(":core:presentation"))
+    implementation (project(":data"))
+    implementation (project(":feature:settings"))
+//    implementation (project(":feature:calendar"))
+    implementation (project(":feature:activities"))
+//    implementation (project(":feature:yearstat"))
+    implementation (project(":feature:dialog"))
+    // Jetpack Compose
+    implementation libs.core.ktx
+    implementation libs.compose.ui
+    implementation libs.compose.material
+    implementation libs.compose.ui.tooling.preview
+    implementation libs.lifecycle.runtime.ktx
+    implementation libs.activity.compose
+    implementation libs.media3.common
+    implementation libs.appcompat.resources
+    implementation libs.appcompat
+    testImplementation libs.junit
+    androidTestImplementation libs.junit.ext
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.compose.ui.test.junit4
+    debugImplementation libs.compose.ui.tooling
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
-    implementation 'androidx.activity:activity-compose:1.3.1'
-    implementation 'androidx.media3:media3-common:+'
-    implementation 'androidx.appcompat:appcompat-resources:1.4.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+// Coil
+    implementation libs.coil.compose
+    implementation libs.coil.gif
 
-    implementation "io.coil-kt:coil-compose:2.1.0"
-    implementation "io.coil-kt:coil-gif:2.1.0"
+// Cascade
+    implementation libs.cascade.compose
 
-    implementation "me.saket.cascade:cascade-compose:2.2.0"
+// Accompanist
+    implementation libs.accompanist.pager
+    implementation libs.accompanist.pager.indicators
 
-    implementation "com.google.accompanist:accompanist-pager:0.21.2-beta"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.21.2-beta"
+// ViewModel Compose
+    implementation libs.lifecycle.viewmodel.compose
 
-    // ViewModel Compose
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1"
+// Dagger - Hilt
+    implementation libs.hilt.android
+    implementation libs.hilt.navigation.compose
+    kapt libs.hilt.compiler
 
-    //Dagger - Hilt
-    implementation 'com.google.dagger:hilt-android:2.47'
-    implementation"androidx.hilt:hilt-navigation-compose:1.0.0"
-    kapt 'com.google.dagger:hilt-compiler:2.47'
+// Navigation Compose
+    implementation libs.navigation.compose
 
-    // Room
-    implementation "androidx.room:room-ktx:2.5.0"
-    kapt "androidx.room:room-compiler:2.5.0"
+// Charts Libraries
+    implementation libs.compose.charts
+    implementation libs.ycharts
 
-    //implementation"androidx.navigation:navigation-compose:2.5.0-rc01"
-    //implementation"androidx.navigation:navigation-compose:2.4.2"
-    implementation "androidx.navigation:navigation-compose:2.5.3"
+// Lottie
+    implementation libs.lottie.compose
 
-    //pies charts library
-    implementation "ma.hu:compose-charts:0.3.5"
-    implementation 'co.yml:ycharts:2.1.0'
+// Docs Libraries
+    implementation libs.poi.ooxml
+    implementation libs.xmlbeans
+    implementation libs.stax.api
+    implementation libs.aalto.xml
 
-    //Lottie
-    implementation "com.airbnb.android:lottie-compose:6.1.0"
-    
-    //Docs Library
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
-    implementation group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '3.1.0'
-    implementation 'javax.xml.stream:stax-api:1.0'
-    implementation 'com.fasterxml:aalto-xml:1.2.2'
+// Material Icons Extended
+    implementation libs.material.icons.extended
+    implementation libs.ui.util
 
-    //Drive
-    implementation "com.google.android.gms:play-services-auth:20.7.0"
-    implementation('com.google.api-client:google-api-client-android:1.23.0') {
-        exclude group: 'org.apache.httpcomponents'
-    }
-    implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
-        exclude group: 'org.apache.httpcomponents'
-    }
-    //Gson
-    implementation 'com.google.code.gson:gson:2.9.0'
+// ConstraintLayout Compose
+    implementation libs.constraintlayout.compose
 
-    implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    implementation "androidx.compose.ui:ui-util:$compose_version"
-
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha03"
 
 }

@@ -1,0 +1,92 @@
+[versions]
+coreKtx = "1.7.0"
+compose = "1.4.3"
+lifecycleRuntime = "2.3.1"
+activityCompose = "1.3.1"
+media3Common = "+"
+appCompatResources = "1.4.1"
+appCompat = "1.6.1"
+junit = "4.13.2"
+junitExt = "1.1.5"
+espressoCore = "3.5.1"
+coilCompose = "2.1.0"
+coilGif = "2.1.0"
+cascadeCompose = "2.2.0"
+accompanistPager = "0.21.2-beta"
+accompanistPagerIndicators = "0.21.2-beta"
+lifecycleViewModelCompose = "2.4.1"
+hilt = "2.47"
+hiltNavigationCompose = "1.0.0"
+room = "2.5.0"
+navigationCompose = "2.5.3"
+composeCharts = "0.3.5"
+ycharts = "2.1.0"
+lottieCompose = "6.1.0"
+poiOoxml = "3.17"
+xmlbeans = "3.1.0"
+staxApi = "1.0"
+aaltoXml = "1.2.2"
+playServicesAuth = "20.7.0"
+googleApiClient = "1.23.0"
+googleApiServicesDrive = "v3-rev136-1.25.0"
+gson = "2.9.0"
+materialIconsExtended = "1.1.0-alpha03"
+uiUtil = "1.1.0-alpha13"
+constraintlayoutCompose = "1.1.0-alpha03"
+agp = "8.1.1"
+org-jetbrains-kotlin-android = "1.8.10"
+material = "1.10.0"
+org-jetbrains-kotlin-jvm = "1.8.10"
+
+
+[libraries]
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntime" }
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3Common" }
+appcompat-resources = { group = "androidx.appcompat", name = "appcompat-resources", version.ref = "appCompatResources" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appCompat" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-ext = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
+coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coilGif" }
+cascade-compose = { group = "me.saket.cascade", name = "cascade-compose", version.ref = "cascadeCompose" }
+accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanistPager" }
+accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
+lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+compose-charts = { group = "ma.hu", name = "compose-charts", version.ref = "composeCharts" }
+ycharts = { group = "co.yml", name = "ycharts", version.ref = "ycharts" }
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottieCompose" }
+poi-ooxml = { group = "org.apache.poi", name = "poi-ooxml", version.ref = "poiOoxml" }
+xmlbeans = { group = "org.apache.xmlbeans", name = "xmlbeans", version.ref = "xmlbeans" }
+stax-api = { group = "javax.xml.stream", name = "stax-api", version.ref = "staxApi" }
+aalto-xml = { group = "com.fasterxml", name = "aalto-xml", version.ref = "aaltoXml" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+google-api-client = { group = "com.google.api-client", name = "google-api-client-android", version.ref = "googleApiClient" }
+google-api-services-drive = { group = "com.google.apis", name = "google-api-services-drive", version.ref = "googleApiServicesDrive" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose" }
+ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "uiUtil" }
+constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+[plugins]
+com-android-library = { id = "com.android.library", version.ref = "agp" }
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
+org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-jvm" }
+
+[bundles]
+

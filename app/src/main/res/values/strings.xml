@@ -89,4 +89,6 @@
     <string name="backup_with_drive">Backup with Drive</string>
     <string name="sync">Sync</string>
     <string name="syncing_please_wait">Syncing.. PLease wait</string>
+    <string name="notifier">Напоминалка</string>
+    <string name="hour_notifiaction">Часовое напоминание</string>
 </resources>

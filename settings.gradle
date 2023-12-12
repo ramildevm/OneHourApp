@@ -14,4 +14,16 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "OneHourApp"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include ':app'
+include ':core:domain'
+include ':data'
+include ':feature:activities'
+include ':feature:settings'
+include ':feature:yearstat'
+include ':feature:calendar'
+include ':core:theme'
+include ':notification'
+include ':core:presentation'
+include ':core:common'
+include ':feature:dialog'

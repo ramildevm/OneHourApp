@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -18,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OneHourApp">
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.OneHourApp">
             <intent-filter>
@@ -27,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.screens.AddRecordDialogActivity"
+            android:name=".dialog.record.presentation.AddRecordDialogActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTop"
             android:exported="true"
@@ -36,12 +37,12 @@
             android:theme="@style/Theme.AppCompat.DayNight.Dialog" >
         </activity>
         <receiver
-            android:name=".receivers.NotificationReceiver"
+            android:name=".notification.receivers.NotificationReceiver"
             android:enabled="true" />
         <receiver
-            android:name=".receivers.NotificationActionReceiver"
+            android:name=".notification.receivers.NotificationActionReceiver"
             android:enabled="true" />
-        <receiver android:name=".receivers.NotificationBootReceiver"
+        <receiver android:name=".notification.receivers.NotificationBootReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

@@ -1,0 +1,69 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+}
+
+android {
+    namespace 'com.example.dialog'
+    compileSdk targetAndroidSdk
+
+    defaultConfig {
+        minSdk minAndroidSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.4.3'
+    }
+}
+
+dependencies {
+    implementation (project(":core:theme"))
+    implementation (project(":core:domain"))
+    implementation (project(":core:common"))
+    implementation (project(":core:presentation"))
+
+    implementation libs.core.ktx
+    implementation libs.compose.ui
+    implementation libs.compose.material
+    implementation libs.compose.ui.tooling.preview
+    implementation libs.lifecycle.runtime.ktx
+    implementation libs.activity.compose
+    implementation libs.media3.common
+    implementation libs.appcompat.resources
+    implementation libs.appcompat
+    testImplementation libs.junit
+    androidTestImplementation libs.junit.ext
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.compose.ui.test.junit4
+    debugImplementation libs.compose.ui.tooling
+
+    implementation libs.material.icons.extended
+    // ViewModel Compose
+    implementation libs.lifecycle.viewmodel.compose
+
+    // Dagger - Hilt
+    implementation libs.hilt.android
+    implementation libs.hilt.navigation.compose
+    kapt libs.hilt.compiler
+}
